@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RedLab · Beta 3</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0d0b09;--ink2:#1a1613;--ink3:#252018;
+  --paper:#f4efe6;--paper2:#ece5d5;--paper3:#e0d8c6;
+  --line:rgba(13,11,9,.11);--line2:rgba(13,11,9,.2);
+  --red:#bf3728;--red2:#d94335;--red-pale:#faeae8;
+  --gold:#b07d0e;--gold-pale:#fdf4d2;
+  --teal:#1a6854;--teal-pale:#e0f0eb;
+  --purple:#5c3d7c;--purple-pale:#ede5f8;
+  --blue:#2558a8;--blue-pale:#e4ecf8;
+  --text:#18140f;--text2:#574e43;--text3:#968a7a;
+  --serif:'Libre Baskerville',Georgia,serif;
+  --display:'Bebas Neue',Impact,sans-serif;
+  --mono:'IBM Plex Mono','Courier New',monospace;
+  --sans:'Barlow',system-ui,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--paper);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.045'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;}
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.active{display:flex;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pop{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+@keyframes stampDrop{from{opacity:0;transform:scale(1.5) rotate(-5deg)}to{opacity:1;transform:scale(1) rotate(-4deg)}}
+.au{opacity:0;animation:fadeUp .6s ease forwards;}
+.d1{animation-delay:.08s}.d2{animation-delay:.17s}.d3{animation-delay:.28s}.d4{animation-delay:.4s}.d5{animation-delay:.55s}
+
+/* ── NOMBRE MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(13,11,9,.72);z-index:5000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+.modal-overlay.hidden{display:none;}
+.modal-box{background:var(--paper);max-width:440px;width:90%;padding:48px 40px;border-top:4px solid var(--red);position:relative;animation:pop .3s ease;}
+.modal-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--red);margin-bottom:14px;}
+.modal-title{font-family:var(--display);font-size:44px;letter-spacing:1px;line-height:1;margin-bottom:8px;}
+.modal-sub{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:28px;}
+.modal-input{width:100%;padding:12px 16px;font-family:var(--sans);font-size:15px;border:1px solid var(--line2);border-top:3px solid var(--red);background:var(--paper2);color:var(--text);outline:none;margin-bottom:20px;}
+.modal-input:focus{border-top-color:var(--red2);}
+.modal-label{display:block;font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:6px;}
+.modal-btn{width:100%;background:var(--red);color:var(--paper);font-family:var(--display);font-size:20px;letter-spacing:3px;padding:13px;border:none;cursor:pointer;transition:background .2s;}
+.modal-btn:hover{background:var(--red2);}
+
+/* ── WELCOME ── */
+#screen-welcome{background:var(--ink);color:var(--paper);position:relative;overflow:hidden;align-items:stretch;}
+#screen-welcome::after{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.03) 1px,transparent 1px);background-size:26px 26px;pointer-events:none;}
+.w-tape{position:absolute;left:0;top:0;bottom:0;width:7px;background:var(--red);}
+.w-inner{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:1000px;margin:0 auto;width:100%;padding:80px 64px;position:relative;z-index:1;}
+.w-kicker{display:flex;align-items:center;gap:14px;margin-bottom:28px;}
+.w-kicker-line{height:1px;background:rgba(245,240,232,.15);width:64px;}
+.w-kicker-txt{font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--red2);}
+.w-logo{font-family:var(--display);font-size:clamp(96px,17vw,190px);line-height:.88;color:var(--paper);letter-spacing:-2px;margin-bottom:4px;}
+.w-logo-sub{font-family:var(--display);font-size:clamp(28px,5vw,56px);letter-spacing:10px;color:var(--red);margin-bottom:38px;}
+.w-deck{font-family:var(--serif);font-style:italic;font-size:clamp(14px,1.8vw,17px);color:rgba(245,240,232,.6);line-height:1.75;max-width:500px;margin-bottom:52px;border-left:2px solid var(--red);padding-left:20px;}
+.w-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:32px;flex-wrap:wrap;}
+.w-stats{display:flex;gap:40px;}
+.wstat-n{font-family:var(--display);font-size:52px;line-height:1;color:var(--paper);}
+.wstat-l{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(245,240,232,.35);margin-top:2px;}
+.btn-enter{display:inline-flex;align-items:center;gap:10px;background:var(--red);color:var(--paper);font-family:var(--display);font-size:22px;letter-spacing:3px;padding:13px 38px;border:none;cursor:pointer;transition:all .2s;}
+.btn-enter:hover{background:var(--red2);transform:translateY(-2px);box-shadow:0 12px 36px rgba(191,55,40,.4);}
+.w-issue{position:absolute;top:36px;right:56px;font-family:var(--mono);font-size:9px;letter-spacing:2px;color:rgba(245,240,232,.2);text-transform:uppercase;z-index:1;}
+
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 36px;height:54px;background:var(--ink);color:var(--paper);position:sticky;top:0;z-index:200;}
+.tb-brand{display:flex;align-items:baseline;gap:6px;}
+.tb-logo{font-family:var(--display);font-size:24px;letter-spacing:2px;color:var(--paper);}
+.tb-sep{font-family:var(--mono);font-size:10px;color:rgba(245,240,232,.25);margin:0 3px;}
+.tb-section{font-family:var(--mono);font-size:11px;color:var(--red2);letter-spacing:1.5px;text-transform:uppercase;}
+.tb-center{display:flex;align-items:center;gap:16px;}
+.tb-student{font-family:var(--mono);font-size:11px;color:rgba(245,240,232,.5);letter-spacing:1px;}
+.tb-score{display:flex;align-items:center;gap:10px;}
+.tb-pts{font-family:var(--display);font-size:22px;color:var(--gold);letter-spacing:1px;min-width:40px;}
+.tb-pts-label{font-family:var(--mono);font-size:9px;color:rgba(245,240,232,.3);letter-spacing:2px;text-transform:uppercase;}
+.tb-prog-track{width:90px;height:3px;background:rgba(245,240,232,.12);}
+.tb-prog-fill{height:100%;background:var(--gold);transition:width .5s cubic-bezier(.4,0,.2,1);}
+.tb-btn{background:transparent;border:1px solid rgba(245,240,232,.18);color:rgba(245,240,232,.55);font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:6px 14px;cursor:pointer;transition:all .2s;}
+.tb-btn:hover{border-color:var(--red2);color:var(--red2);}
+
+/* ── LEVELS ── */
+#screen-levels{background:var(--paper);}
+.lv-hero{background:var(--ink2);color:var(--paper);padding:50px 60px;border-bottom:3px solid var(--red);position:relative;overflow:hidden;}
+.lv-hero::before{content:'NIVEL';position:absolute;right:-10px;top:50%;transform:translateY(-50%) rotate(90deg);font-family:var(--display);font-size:110px;color:rgba(255,255,255,.03);pointer-events:none;letter-spacing:8px;}
+.lv-eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--red2);margin-bottom:12px;}
+.lv-title{font-family:var(--display);font-size:clamp(44px,6vw,78px);line-height:.9;letter-spacing:1px;margin-bottom:10px;}
+.lv-sub{font-family:var(--serif);font-style:italic;font-size:14px;color:rgba(245,240,232,.5);}
+.lv-body{padding:44px 60px;max-width:1100px;margin:0 auto;width:100%;}
+.lv-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line2);}
+.lv-card{padding:34px 28px;border-right:1px solid var(--line2);cursor:pointer;position:relative;transition:background .25s;overflow:hidden;min-height:280px;display:flex;flex-direction:column;background:var(--paper);}
+.lv-card:last-child{border-right:none;}
+.lv-card:hover:not(.locked){background:var(--paper2);}
+.lv-card.locked{opacity:.45;cursor:not-allowed;}
+.lv-stripe{position:absolute;top:0;left:0;right:0;height:4px;transform:scaleX(0);transform-origin:left;transition:transform .4s cubic-bezier(.4,0,.2,1);}
+.lv-card:not(.locked):hover .lv-stripe{transform:scaleX(1);}
+.lv-num{font-family:var(--display);font-size:80px;line-height:1;color:var(--line);margin-bottom:14px;}
+.lv-badge{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:3px 10px;margin-bottom:12px;align-self:flex-start;}
+.lv-name{font-family:var(--display);font-size:34px;letter-spacing:1px;color:var(--text);margin-bottom:8px;line-height:1;}
+.lv-desc{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--text2);line-height:1.6;flex:1;}
+.lv-foot{display:flex;align-items:center;justify-content:space-between;margin-top:22px;padding-top:14px;border-top:1px solid var(--line);}
+.lv-count{font-family:var(--mono);font-size:11px;color:var(--text3);}
+.lv-arrow{font-family:var(--mono);font-size:14px;transition:transform .2s;}
+.lv-card:not(.locked):hover .lv-arrow{transform:translateX(5px);}
+.lv-progress{position:absolute;bottom:0;left:0;height:3px;transition:width .5s ease;}
+
+/* ── STANDS ── */
+#screen-stands{background:var(--paper);}
+.st-hero{padding:46px 60px;border-bottom:1px solid var(--line2);}
+.st-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0;border-top:1px solid var(--line2);border-left:1px solid var(--line2);max-width:1100px;margin:0 auto;}
+.st-tile{padding:38px 34px;border-right:1px solid var(--line2);border-bottom:1px solid var(--line2);cursor:pointer;transition:background .2s;position:relative;overflow:hidden;min-height:215px;display:flex;flex-direction:column;}
+.st-tile:hover{background:var(--paper2);}
+.st-rule{position:absolute;top:0;left:0;right:0;height:3px;transform:scaleX(0);transform-origin:left;transition:transform .35s cubic-bezier(.4,0,.2,1);}
+.st-tile:hover .st-rule{transform:scaleX(1);}
+.st-index{font-family:var(--display);font-size:60px;line-height:1;color:var(--line);position:absolute;top:18px;right:26px;}
+.st-type{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;}
+.st-name{font-family:var(--display);font-size:28px;letter-spacing:.5px;line-height:1.08;margin-bottom:10px;}
+.st-desc{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--text2);line-height:1.65;flex:1;max-width:340px;}
+.st-foot{display:flex;align-items:center;justify-content:space-between;margin-top:18px;padding-top:12px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;color:var(--text3);}
+
+/* ── ACTIVITY ── */
+#screen-activity{background:var(--paper);}
+.act-wrap{flex:1;display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 54px);}
+.act-left{background:var(--ink);color:var(--paper);padding:52px 48px;display:flex;flex-direction:column;position:relative;overflow:hidden;}
+.act-left::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--red);}
+.act-dropcap{position:absolute;bottom:-15px;right:-8px;font-family:var(--display);font-size:260px;line-height:1;color:rgba(255,255,255,.022);pointer-events:none;user-select:none;}
+.act-tag{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:4px 13px;border:1px solid;align-self:flex-start;margin-bottom:26px;}
+.act-seq{font-family:var(--mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(245,240,232,.28);margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+.act-seq::after{content:'';flex:1;height:1px;background:rgba(245,240,232,.08);}
+.act-frag{font-family:var(--serif);font-style:italic;font-size:clamp(15px,2.1vw,20px);line-height:1.88;color:var(--paper);flex:1;position:relative;padding-left:22px;}
+.act-frag-bar{position:absolute;left:0;top:6px;bottom:6px;width:2px;border-radius:1px;}
+.act-attr{margin-top:32px;padding-top:22px;border-top:1px solid rgba(245,240,232,.1);}
+.act-author{font-family:var(--display);font-size:18px;letter-spacing:2px;}
+.act-work{font-family:var(--serif);font-style:italic;font-size:11px;color:rgba(245,240,232,.38);margin-top:4px;}
+.act-right{background:var(--paper);padding:52px 48px;display:flex;flex-direction:column;}
+.act-qtype{font-family:var(--mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.act-qtype::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;}
+.act-question{font-family:var(--serif);font-size:clamp(15px,1.9vw,19px);font-weight:700;line-height:1.45;color:var(--text);margin-bottom:26px;}
+
+/* MCQ */
+.opts{display:flex;flex-direction:column;gap:8px;flex:1;}
+.opt{display:flex;align-items:flex-start;gap:13px;padding:13px 16px;border:1px solid var(--line2);background:var(--paper);cursor:pointer;transition:all .18s;position:relative;}
+.opt::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;transform:scaleY(0);transform-origin:top;transition:transform .2s;}
+.opt:hover{background:var(--paper2);}
+.opt:hover::before{transform:scaleY(1);background:var(--act-color,var(--red));}
+.opt.correct{border-color:var(--teal);background:var(--teal-pale);}
+.opt.correct::before{background:var(--teal);transform:scaleY(1);}
+.opt.wrong{border-color:var(--red);background:var(--red-pale);}
+.opt.wrong::before{background:var(--red);transform:scaleY(1);}
+.opt-l{font-family:var(--display);font-size:17px;color:var(--text3);min-width:19px;line-height:1.3;transition:color .2s;}
+.opt.correct .opt-l{color:var(--teal);}
+.opt.wrong .opt-l{color:var(--red);}
+.opt-t{font-family:var(--sans);font-size:13px;color:var(--text2);line-height:1.5;flex:1;transition:color .2s;}
+.opt:hover .opt-t{color:var(--text);}
+.opt.correct .opt-t{color:var(--teal);}
+.opt.wrong .opt-t{color:var(--red);}
+.opt-ic{margin-left:auto;font-size:15px;opacity:0;}
+.opt.correct .opt-ic,.opt.wrong .opt-ic{opacity:1;}
+
+/* OPEN */
+.open-prompt{font-family:var(--serif);font-style:italic;font-size:14px;line-height:1.7;color:var(--paper);margin-bottom:14px;padding:15px 18px;background:var(--ink);border-left:4px solid;}
+.open-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;display:block;margin-bottom:7px;}
+.open-hint{background:var(--paper3);border-left:3px solid var(--text3);padding:10px 14px;margin-bottom:12px;font-family:var(--mono);font-size:11px;color:var(--text2);line-height:1.5;}
+.open-ta{width:100%;flex:1;min-height:140px;background:var(--paper2);border:1px solid var(--line2);border-top:3px solid var(--line2);color:var(--text);font-family:var(--serif);font-size:14px;line-height:1.75;padding:14px 16px;resize:vertical;outline:none;transition:border-top-color .2s;}
+.open-ta:focus{border-top-color:var(--act-color,var(--red));}
+.open-ta::placeholder{color:var(--text3);font-style:italic;}
+.charcount{font-family:var(--mono);font-size:10px;color:var(--text3);text-align:right;margin-top:5px;}
+.open-sent{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--text2);line-height:1.7;padding:14px;background:var(--paper3);border-left:3px solid;}
+
+/* FEEDBACK */
+.fb{margin-top:16px;padding:15px 18px;border-left:4px solid var(--teal);background:var(--teal-pale);display:none;}
+.fb.wrong{border-color:var(--red);background:var(--red-pale);}
+.fb.show{display:block;}
+.fb-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin-bottom:7px;}
+.fb.wrong .fb-label{color:var(--red);}
+.fb-text{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--text);line-height:1.6;}
+
+/* ACTIONS */
+.actions{display:flex;align-items:center;gap:10px;margin-top:20px;flex-wrap:wrap;}
+.btn-p{display:inline-flex;align-items:center;gap:7px;background:var(--red);color:var(--paper);font-family:var(--display);font-size:16px;letter-spacing:2px;padding:10px 24px;border:none;cursor:pointer;transition:all .2s;}
+.btn-p:hover{background:var(--red2);transform:translateY(-1px);}
+.btn-p:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.btn-s{display:inline-flex;align-items:center;gap:7px;background:transparent;border:1px solid var(--line2);color:var(--text2);font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:10px 16px;cursor:pointer;transition:all .2s;}
+.btn-s:hover{border-color:var(--text2);color:var(--text);}
+
+/* SERVER STATUS */
+.server-status{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border:1px solid;}
+.server-status.ok{border-color:var(--teal);color:var(--teal);}
+.server-status.off{border-color:var(--text3);color:var(--text3);}
+.server-dot{width:5px;height:5px;border-radius:50%;}
+.server-status.ok .server-dot{background:var(--teal);}
+.server-status.off .server-dot{background:var(--text3);}
+
+/* TOAST */
+.toast{position:fixed;bottom:26px;right:26px;background:var(--ink);color:var(--gold);font-family:var(--display);font-size:18px;letter-spacing:2px;padding:11px 20px;border-left:4px solid var(--gold);z-index:9000;animation:pop .3s ease;display:none;}
+.toast.show{display:flex;align-items:center;gap:8px;}
+
+/* SUMMARY */
+#screen-summary{background:var(--ink);color:var(--paper);align-items:center;justify-content:center;text-align:center;padding:80px 40px;}
+.sum-stamp{display:inline-block;border:4px solid var(--gold);padding:7px 22px;font-family:var(--display);font-size:14px;letter-spacing:4px;color:var(--gold);transform:rotate(-3deg);margin-bottom:36px;animation:stampDrop .5s ease forwards;}
+.sum-title{font-family:var(--display);font-size:clamp(56px,10vw,110px);line-height:.88;letter-spacing:2px;margin-bottom:8px;}
+.sum-title span{color:var(--red);}
+.sum-sub{font-family:var(--serif);font-style:italic;font-size:15px;color:rgba(245,240,232,.48);margin-bottom:52px;}
+.sum-grid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid rgba(245,240,232,.1);max-width:600px;width:100%;margin:0 auto 44px;}
+.sum-tile{padding:24px 14px;border-right:1px solid rgba(245,240,232,.1);text-align:center;}
+.sum-tile:last-child{border-right:none;}
+.sum-n{font-family:var(--display);font-size:48px;line-height:1;margin-bottom:5px;}
+.sum-l{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(245,240,232,.28);}
+.sum-acts{display:flex;gap:12px;justify-content:center;}
+.btn-sum-p{background:var(--red);color:var(--paper);font-family:var(--display);font-size:18px;letter-spacing:2px;padding:12px 30px;border:none;cursor:pointer;transition:all .2s;}
+.btn-sum-p:hover{background:var(--red2);}
+.btn-sum-s{background:transparent;border:1px solid rgba(245,240,232,.22);color:rgba(245,240,232,.55);font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:12px 18px;cursor:pointer;transition:all .2s;}
+.btn-sum-s:hover{border-color:rgba(245,240,232,.5);color:var(--paper);}
+
+/* NOTIF SERVIDOR */
+.server-notif{font-family:var(--mono);font-size:10px;margin-top:12px;padding:8px 14px;border-left:3px solid;}
+.server-notif.ok{border-color:var(--teal);color:var(--teal);background:var(--teal-pale);}
+.server-notif.fail{border-color:var(--text3);color:var(--text3);background:var(--paper3);}
+
+@media(max-width:768px){
+  .w-inner{padding:52px 26px;}
+  .lv-body,.st-hero{padding:28px 20px;}
+  .lv-grid{grid-template-columns:1fr;}
+  .lv-card{border-right:none;border-bottom:1px solid var(--line2);}
+  .st-grid{grid-template-columns:1fr;}
+  .act-wrap{grid-template-columns:1fr;}
+  .act-left{min-height:280px;}
+  .topbar{padding:0 18px;}
+  .sum-grid{grid-template-columns:repeat(2,1fr);}
+  .tb-student{display:none;}
+}
+
+/* ── MECÁNICAS LÚDICAS ── */
+.game-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;border:1px solid;margin-bottom:18px;align-self:flex-start;}
+.game-icon{font-size:16px;line-height:1;}
+.detective-clues{display:flex;flex-direction:column;gap:6px;margin-bottom:18px;}
+.clue-chip{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;font-family:var(--mono);font-size:11px;background:rgba(245,240,232,.07);border:1px dashed rgba(245,240,232,.2);color:rgba(245,240,232,.7);}
+.clue-icon{font-size:12px;}
+.decoder-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px;}
+.decoder-card{padding:10px 12px;font-family:var(--mono);font-size:11px;background:rgba(245,240,232,.05);border:1px solid rgba(245,240,232,.12);color:rgba(245,240,232,.6);text-align:center;}
+.decoder-val{font-family:var(--display);font-size:20px;color:var(--gold);display:block;margin-bottom:2px;}
+.mission-card{background:rgba(245,240,232,.06);border:1px solid rgba(245,240,232,.12);border-left:3px solid;padding:14px 16px;margin-bottom:14px;}
+.mission-title{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;opacity:.6;}
+.mission-body{font-family:var(--serif);font-style:italic;font-size:13px;line-height:1.65;color:rgba(245,240,232,.8);}
+.opt-game{display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid var(--line2);background:var(--paper);cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.opt-game::after{content:'';position:absolute;inset:0;background:var(--act-color,var(--red));opacity:0;transition:opacity .15s;}
+.opt-game:hover::after{opacity:.04;}
+.opt-game:hover{border-color:var(--act-color,var(--red));transform:translateX(3px);}
+.opt-game.correct{border-color:var(--teal);background:var(--teal-pale);}
+.opt-game.wrong{border-color:var(--red);background:var(--red-pale);}
+.opt-game-emoji{font-size:18px;min-width:26px;text-align:center;}
+.opt-game-letter{font-family:var(--display);font-size:17px;color:var(--text3);min-width:18px;}
+.opt-game-text{font-family:var(--sans);font-size:13px;color:var(--text2);flex:1;line-height:1.45;}
+.opt-game.correct .opt-game-text,.opt-game.correct .opt-game-letter{color:var(--teal);}
+.opt-game.wrong .opt-game-text,.opt-game.wrong .opt-game-letter{color:var(--red);}
+.opt-game-result{margin-left:auto;font-size:14px;opacity:0;}
+.opt-game.correct .opt-game-result,.opt-game.wrong .opt-game-result{opacity:1;}
+.field-note{font-family:var(--mono);font-size:10px;letter-spacing:1px;color:rgba(245,240,232,.4);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.field-note::before{content:'';flex:1;height:1px;background:rgba(245,240,232,.1);}
+.field-note::after{content:'';flex:1;height:1px;background:rgba(245,240,232,.1);}
+.author-ghost{background:var(--ink2);border:1px solid rgba(245,240,232,.1);border-left:3px solid;padding:14px 18px;margin-bottom:14px;}
+.author-ghost-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;opacity:.5;}
+.author-ghost-text{font-family:var(--serif);font-style:italic;font-size:13px;line-height:1.65;color:rgba(245,240,232,.75);}
+.xp-hint{display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(176,125,14,.08);border:1px solid rgba(176,125,14,.2);font-family:var(--mono);font-size:10px;color:var(--gold);margin-bottom:12px;}
+.writing-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.writing-goal{font-family:var(--mono);font-size:10px;color:var(--text3);}
+.writing-goal span{color:var(--teal);font-weight:600;}
+
+/* ── OPCIONES MCQ (lectura e interpretación) ── */
+.opts-list{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;}
+.opt-choice,.interp-opt{display:flex;align-items:center;gap:12px;padding:12px 16px;border:1px solid var(--line2);background:var(--paper);cursor:pointer;transition:border-color .15s,background .15s,transform .12s;}
+.opt-choice:hover:not(.correct):not(.wrong):not(.dimmed),
+.interp-opt:hover:not(.correct):not(.wrong):not(.dimmed){border-color:var(--act-color,var(--red));background:var(--paper2);transform:translateX(4px);}
+.opt-choice.correct,.interp-opt.correct{border-color:var(--teal);background:var(--teal-pale);}
+.opt-choice.wrong,.interp-opt.wrong{border-color:var(--red);background:var(--red-pale);}
+.opt-choice.dimmed,.interp-opt.dimmed{opacity:.35;}
+.opt-letter{font-family:var(--display);font-size:15px;min-width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;}
+.opt-body,.interp-body{font-family:var(--sans);font-size:13px;color:var(--text2);line-height:1.5;flex:1;}
+.opt-icon,.interp-icon{font-size:16px;min-width:20px;text-align:center;font-weight:700;}
+.opt-choice.correct .opt-body,.opt-choice.correct .opt-letter{color:var(--teal);}
+.opt-choice.wrong .opt-body,.opt-choice.wrong .opt-letter{color:var(--red);}
+.interp-sym{font-size:22px;min-width:30px;text-align:center;flex-shrink:0;font-weight:700;}
+.interp-opt.correct .interp-body,.interp-opt.correct .interp-sym{color:var(--teal);}
+.interp-opt.wrong .interp-body,.interp-opt.wrong .interp-sym{color:var(--red);}
+.interp-hint-box{padding:9px 14px;background:rgba(245,240,232,.04);border:1px solid var(--line2);font-family:var(--sans);font-size:12px;color:var(--text3);line-height:1.5;margin-bottom:14px;}
+
+/* ── ESCRITURA & CREATIVO ── */
+.writing-prompt{padding:14px 18px;border-left:3px solid;margin-bottom:14px;background:rgba(245,240,232,.04);}
+.writing-prompt-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.writing-prompt-text{font-family:var(--serif);font-size:14px;line-height:1.7;color:var(--text2);}
+.fmt-tag{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border:1px solid;margin-bottom:14px;}
+.streak-bar{display:flex;align-items:center;gap:8px;padding:7px 14px;margin-bottom:14px;font-family:var(--mono);font-size:11px;border:1px solid;border-radius:2px;}
+.streak-bar.off{color:var(--text3);border-color:var(--line2);background:transparent;}
+.streak-bar.on{color:#b8590a;border-color:#e8902633;background:#e8902612;animation:streakPulse .5s ease;}
+.streak-flame{font-size:14px;}
+@keyframes streakPulse{0%{transform:scale(.92);}50%{transform:scale(1.03);}100%{transform:scale(1);}}
+
+/* ── BARRA DE MEDALLAS (escritura) ── */
+.medal-track{height:6px;background:var(--line2);border-radius:3px;overflow:hidden;margin-bottom:10px;}
+.medal-fill{height:100%;border-radius:3px;transition:width .25s ease;}
+
+/* ── INGREDIENTES CREATIVO ── */
+.ingr-check-row{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border:1px solid var(--line2);background:var(--paper2);margin-bottom:12px;}
+.ingr-check-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:4px;}
+.ingr-check{display:flex;align-items:center;gap:8px;font-family:var(--sans);font-size:12px;color:var(--text);cursor:pointer;}
+.ingr-check input{accent-color:var(--gold);width:14px;height:14px;cursor:pointer;}
+.reroll-btn{display:inline-flex;align-items:center;gap:6px;background:transparent;border:1px solid;font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:7px 14px;margin-top:12px;cursor:pointer;transition:all .18s;border-radius:2px;}
+.reroll-btn:hover:not(:disabled){background:rgba(245,240,232,.08);transform:translateY(-1px);}
+.reroll-btn:disabled{opacity:.35;cursor:not-allowed;}
+
+/* ── RUEDA DE LA FORTUNA (lectura) — hover revela, clic confirma ── */
+.wheel-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:4px;}
+.wheel-card{position:relative;min-height:96px;cursor:pointer;border:1px solid var(--line2);background:var(--paper);transition:border-color .18s,background .18s,transform .15s;overflow:hidden;display:flex;flex-direction:column;}
+/* tapa oscura (estado inicial) */
+.wheel-cover{position:absolute;inset:0;background:var(--ink2);display:flex;align-items:center;justify-content:center;gap:10px;padding:12px 16px;transition:opacity .25s,transform .25s;z-index:2;}
+.wheel-cover-letter{font-family:var(--display);font-size:28px;color:var(--gold);line-height:1;}
+.wheel-cover-hint{font-family:var(--mono);font-size:10px;color:rgba(245,240,232,.35);letter-spacing:1px;}
+/* contenido real (debajo) */
+.wheel-content{position:absolute;inset:0;display:flex;align-items:center;gap:10px;padding:12px 16px;z-index:1;}
+.wheel-content-text{font-family:var(--sans);font-size:12.5px;color:var(--text2);line-height:1.45;flex:1;}
+.wheel-content-result{font-size:15px;flex-shrink:0;min-width:20px;text-align:center;}
+/* hover: levanta la tapa */
+.wheel-card:hover:not(.locked) .wheel-cover{opacity:0;transform:translateY(-6px);}
+.wheel-card:hover:not(.locked){border-color:var(--act-color,var(--blue));transform:translateY(-2px);box-shadow:0 4px 12px rgba(13,11,9,.08);}
+/* estados post-respuesta */
+.wheel-card.correct{border-color:var(--teal);background:var(--teal-pale);}
+.wheel-card.correct .wheel-cover{display:none;}
+.wheel-card.correct .wheel-content-text{color:var(--teal);font-weight:600;}
+.wheel-card.wrong{border-color:var(--red);background:var(--red-pale);}
+.wheel-card.wrong .wheel-cover{display:none;}
+.wheel-card.wrong .wheel-content-text{color:var(--red);}
+.wheel-card.revealed .wheel-cover{display:none;}
+.wheel-card.revealed{opacity:.4;}
+.wheel-card.locked{cursor:default;}
+.wheel-intro{display:flex;align-items:center;gap:10px;padding:9px 14px;background:rgba(37,88,168,.06);border:1px solid rgba(37,88,168,.18);font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:12px;}
+
+/* ── SALA DE ESCAPE (interpretación) ── */
+.escape-lock{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--ink2);border:1px solid;margin-bottom:18px;}
+.escape-lock-icon{font-size:22px;flex-shrink:0;}
+.escape-lock-text{font-family:var(--serif);font-style:italic;font-size:12.5px;color:rgba(245,240,232,.7);line-height:1.55;}
+.lock-grid{display:flex;flex-direction:column;gap:8px;flex:1;}
+.lock-tile{display:flex;align-items:center;gap:14px;padding:13px 16px;border:1px solid var(--line2);background:var(--paper);cursor:pointer;transition:all .18s;}
+.lock-tile:hover{border-color:var(--act-color,var(--red));background:var(--paper2);}
+.lock-symbol{font-family:var(--mono);font-size:18px;color:var(--text3);min-width:24px;text-align:center;}
+.lock-text{font-family:var(--sans);font-size:13px;color:var(--text2);flex:1;line-height:1.45;}
+.lock-result{font-size:16px;margin-left:auto;}
+.lock-tile.correct{border-color:var(--teal);background:var(--teal-pale);}
+.lock-tile.correct .lock-symbol,.lock-tile.correct .lock-text{color:var(--teal);}
+.lock-tile.wrong{border-color:var(--red);background:var(--red-pale);}
+.lock-tile.wrong .lock-symbol,.lock-tile.wrong .lock-text{color:var(--red);}
+
+/* ── ENTREVISTA AL PERSONAJE (escritura) ── */
+.chat-window{border:1px solid;padding:16px;margin-bottom:14px;background:rgba(13,11,9,.015);}
+.chat-bubble{display:flex;gap:12px;align-items:flex-start;}
+.chat-character{border-left:3px solid;padding-left:14px;}
+.chat-student{border-left:3px solid;padding-left:14px;justify-content:flex-end;}
+.chat-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:15px;flex-shrink:0;}
+.chat-name{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;}
+.chat-text{font-family:var(--serif);font-style:italic;font-size:13.5px;line-height:1.6;color:var(--text2);}
+.chat-input{min-height:120px;}
+
+/* ── CREATIVO — tarjetas de material ── */
+.remix-card{border-left:3px solid;padding:14px 18px;margin-bottom:14px;background:rgba(0,0,0,.03);}
+.remix-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.remix-text{font-family:var(--serif);font-style:italic;font-size:13px;line-height:1.6;color:var(--text2);margin-bottom:14px;}
+.remix-ingredients{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.ingredient-chip{display:flex;flex-direction:column;gap:5px;padding:12px 14px;border:1.5px solid;background:var(--paper2);}
+.ingredient-label{font-family:var(--mono);font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);}
+.ingredient-value{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--text);line-height:1.35;font-weight:600;}
+
+/* ── FORMATO POÉTICO ── */
+.fmt-tag{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border:1px solid;margin-bottom:14px;}
+.poem-area{width:100%;background:var(--paper2);border:1px solid var(--line2);border-top:3px solid;font-family:var(--serif);font-size:15px;color:var(--text);line-height:2;resize:vertical;outline:none;padding:16px 18px;min-height:180px;box-sizing:border-box;}
+.poem-area::placeholder{color:var(--text3);font-style:italic;}
+.poem-structure{display:flex;flex-direction:column;gap:0;border:1px solid var(--line2);margin-bottom:12px;background:var(--paper2);overflow:hidden;}
+.poem-structure-title{font-family:var(--mono);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);padding:8px 14px;border-bottom:1px solid var(--line2);background:var(--paper3);}
+.poem-step{padding:8px 14px;border-bottom:1px solid var(--line2);display:flex;flex-direction:column;gap:3px;}
+.poem-step:last-child{border-bottom:none;}
+.poem-step-tag{font-family:var(--mono);font-size:10px;color:var(--text3);font-weight:600;}
+.poem-step-ex{font-family:var(--serif);font-size:12.5px;color:var(--text2);font-style:italic;line-height:1.45;}
+.poem-step-ex em{color:var(--text);font-style:italic;}
+
+.w-actions{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.btn-intro{display:inline-flex;align-items:center;gap:8px;background:transparent;border:1px solid rgba(245,240,232,.25);color:rgba(245,240,232,.7);font-family:var(--mono);font-size:11px;letter-spacing:1.5px;padding:13px 22px;cursor:pointer;transition:all .2s;text-transform:uppercase;}
+.btn-intro:hover{border-color:var(--gold);color:var(--gold);background:rgba(176,125,14,.06);}
+.btn-light{display:inline-flex;align-items:center;gap:8px;background:transparent;border:1px solid var(--line2);color:var(--text2);font-family:var(--mono);font-size:11px;letter-spacing:1.5px;padding:13px 22px;cursor:pointer;transition:all .2s;text-transform:uppercase;}
+.btn-light:hover{border-color:var(--text2);color:var(--text);}
+
+/* ── INTRO / SEMÁNTICA ── */
+#screen-intro{background:var(--paper);}
+.in-hero{background:var(--ink2);color:var(--paper);padding:50px 60px;border-bottom:3px solid var(--gold);position:relative;overflow:hidden;}
+.in-hero::before{content:'SEMÁNTICA';position:absolute;right:-14px;top:50%;transform:translateY(-50%) rotate(90deg);font-family:var(--display);font-size:90px;color:rgba(255,255,255,.03);pointer-events:none;letter-spacing:6px;white-space:nowrap;}
+.in-eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+.in-title{font-family:var(--display);font-size:clamp(38px,5.5vw,68px);line-height:.95;letter-spacing:1px;margin-bottom:10px;}
+.in-sub{font-family:var(--serif);font-style:italic;font-size:14px;color:rgba(245,240,232,.55);max-width:600px;}
+.in-body{padding:48px 60px 80px;max-width:1000px;margin:0 auto;width:100%;}
+.in-section{margin-bottom:46px;}
+.in-section-label{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+.in-section-num{font-family:var(--display);font-size:30px;color:var(--gold);line-height:1;}
+.in-section-title{font-family:var(--display);font-size:24px;letter-spacing:1px;color:var(--text);}
+.in-text{font-family:var(--serif);font-size:15px;line-height:1.8;color:var(--text2);max-width:760px;}
+.in-text strong{color:var(--text);font-weight:700;}
+.in-example{margin-top:16px;padding:16px 20px;background:var(--paper2);border-left:3px solid var(--gold);font-family:var(--serif);font-style:italic;font-size:13.5px;line-height:1.7;color:var(--text2);}
+.in-example b{font-style:normal;color:var(--gold);font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;display:block;margin-bottom:6px;}
+.tips-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line2);border:1px solid var(--line2);margin-top:8px;}
+.tip-card{background:var(--paper);padding:24px 26px;}
+.tip-num{font-family:var(--display);font-size:36px;color:var(--line);line-height:1;margin-bottom:10px;}
+.tip-title{font-family:var(--sans);font-weight:600;font-size:14px;color:var(--text);margin-bottom:6px;}
+.tip-text{font-family:var(--serif);font-style:italic;font-size:12.5px;color:var(--text2);line-height:1.6;}
+.levels-of-meaning{display:flex;flex-direction:column;gap:0;margin-top:8px;border:1px solid var(--line2);}
+.lom-row{display:flex;align-items:stretch;border-bottom:1px solid var(--line2);}
+.lom-row:last-child{border-bottom:none;}
+.lom-label{width:170px;flex-shrink:0;padding:18px 20px;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;display:flex;align-items:center;border-right:1px solid var(--line2);}
+.lom-desc{padding:18px 22px;font-family:var(--serif);font-style:italic;font-size:13px;color:var(--text2);line-height:1.6;display:flex;align-items:center;}
+.in-actions{display:flex;gap:12px;margin-top:40px;flex-wrap:wrap;}
+@media(max-width:768px){
+  .in-hero,.in-body{padding:30px 20px;}
+  .tips-grid{grid-template-columns:1fr;}
+  .lom-row{flex-direction:column;}
+  .lom-label{width:100%;border-right:none;border-bottom:1px solid var(--line2);}
+}
+</style>
+<style>
+.beta-pill{position:fixed;left:14px;bottom:14px;z-index:9999;background:#bf3728;color:#fff;font:600 11px/1 'Courier New',monospace;letter-spacing:2px;padding:9px 13px;border-radius:99px!important;box-shadow:0 4px 14px rgba(0,0,0,.3);pointer-events:none;text-transform:uppercase}
+.beta-pill i{font-style:normal;opacity:.85;margin-left:8px;letter-spacing:1px;text-transform:none;font-weight:400}
+.beta-tag{align-self:flex-start;display:inline-block;background:#bf3728;color:#fff;font:600 12px/1 'Courier New',monospace;letter-spacing:3px;padding:6px 10px;margin:14px 0 0}
+.tb-beta{font:600 9px/1 'Courier New',monospace;letter-spacing:2px;background:#bf3728;color:#fff;padding:3px 6px;margin-left:8px;vertical-align:middle}
+.beta-stripe{position:fixed;top:0;left:0;right:0;height:4px;z-index:9999;background:repeating-linear-gradient(45deg,#bf3728 0 10px,#0d0b09 10px 20px);pointer-events:none}
+.back-main{position:fixed;right:14px;bottom:14px;z-index:9999;background:#0d0b09;color:#f4efe6;font:600 11px/1 'Courier New',monospace;letter-spacing:1.5px;padding:9px 13px;border-radius:99px!important;text-decoration:none;text-transform:uppercase;box-shadow:0 4px 14px rgba(0,0,0,.3)}.back-main:hover{background:#bf3728}
+.beta-note{align-self:flex-start;margin-top:18px;max-width:560px;border:1px dashed currentColor;padding:10px 14px;font:12px/1.5 'Courier New',monospace;opacity:.85}
+.beta-note b{display:block;letter-spacing:2px;margin-bottom:4px}
+.ph{align-self:flex-start;margin:18px 0 0;max-width:340px;border:2px dashed currentColor;padding:26px 10px;text-align:center;font:12px 'Courier New',monospace;opacity:.6}
+.st-soon,.lv-soon{opacity:.6;cursor:default!important;background:repeating-linear-gradient(45deg,transparent 0 9px,rgba(128,128,128,.12) 9px 18px)!important}
+.soon-tag{font:600 10px 'Courier New',monospace;letter-spacing:2px;border:1px solid currentColor;display:inline-block;padding:3px 7px;margin-top:10px}
+</style><style>body::before{display:none!important}.au{animation:none!important;opacity:1!important}*{transition:none!important}.modal-box{animation:none!important}</style></head>
+<body>
+
+<!-- ══ MODAL NOMBRE ══ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <div class="modal-eyebrow">Bienvenido a RedLab</div>
+    <div class="modal-title">Regístrate</div>
+    <p class="modal-sub">Tu nombre y curso quedarán guardarados.</p>
+    <label class="modal-label">Nombre completo</label>
+    <input class="modal-input" id="nameInput" type="text" placeholder="Ej: María Torres" maxlength="60" onkeydown="if(event.key==='Enter') document.getElementById('courseInput').focus()">
+    <label class="modal-label">Curso</label>
+    <input class="modal-input" id="courseInput" type="text" placeholder="Ej: 903, 1002, 1104…" maxlength="40" onkeydown="if(event.key==='Enter') startSession()">
+    <button class="modal-btn" onclick="startSession()">Comenzar →</button>
+  </div>
+</div>
+
+<!-- ══ WELCOME ══ -->
+<section id="screen-welcome" class="screen active">
+  <div class="w-tape"></div>
+  <div class="w-issue">REDLAB · BETA 3 · 2026</div>
+  <div class="w-inner">
+    <div class="w-kicker au"><span class="w-kicker-line"></span><span class="w-kicker-txt">Plataforma de comprensión lectora · Mario Mendoza</span><span class="w-kicker-line"></span></div>
+    <div class="w-logo au d1">RED</div>
+    <div class="w-logo-sub au d2">LAB</div><div class="beta-tag au d2">BETA 3 · VERSIÓN PARCIAL</div>
+    <p class="w-deck au d3">Una experiencia literaria construida sobre la prosa oscura de Mario Mendoza. Tres niveles, tres stands, 40 actividades de lectura, interpretación y escritura. <b>Versión beta parcial.</b></p><div class="beta-note"><b>EN DESARROLLO</b>Falta: stand Creativo, textura de papel y animaciones de entrada.</div>
+    <div class="w-bottom">
+      <div class="w-stats au d4">
+        <div><div class="wstat-n">3</div><div class="wstat-l">Niveles</div></div>
+        <div><div class="wstat-n">3</div><div class="wstat-l">Stands</div></div>
+        <div><div class="wstat-n">40</div><div class="wstat-l">Actividades</div></div>
+      </div>
+      <div class="w-actions au d5">
+        <button class="btn-enter" onclick="document.getElementById('modalOverlay').classList.remove('hidden')">Iniciar <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="btn-intro" onclick="goTo('intro')"> Aprende antes de jugar</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ INTRO · SEMÁNTICA ══ -->
+<section id="screen-intro" class="screen">
+  <nav class="topbar">
+    <div class="tb-brand"><span class="tb-logo">REDLAB</span><span class="tb-beta">BETA 3</span><span class="tb-sep">/</span><span class="tb-section">Guía rápida</span></div>
+    <div class="tb-center"></div>
+    <button class="tb-btn" onclick="backFromIntro()">← Volver</button>
+  </nav>
+  <div class="in-hero">
+    <div class="in-eyebrow">Antes de jugar</div>
+    <h1 class="in-title">¿Qué es la<br>semántica?</h1>
+    <p class="in-sub">Una guía breve para entender qué vas a entrenar en RedLab y cómo leer mejor cada fragmento de Mario Mendoza.</p>
+  </div>
+  <div class="in-body">
+
+    <div class="in-section">
+      <div class="in-section-label"><span class="in-section-num">01</span><span class="in-section-title">La semántica en una idea</span></div>
+      <p class="in-text">La <strong>semántica</strong> es la parte del lenguaje que estudia el <strong>significado</strong>: no solo lo que las palabras dicen literalmente, sino lo que <strong>quieren decir</strong> en un contexto. Una misma frase puede significar algo distinto según quién la dice, dónde la dice y por qué. Leer bien no es solo "entender las palabras", es entender <strong>el sentido detrás de ellas</strong>.</p>
+      <div class="in-example">
+        <b>Ejemplo</b>
+        "El espejo dejó de reflejar." — Literalmente, un espejo sucio. Semánticamente, puede significar que alguien <strong>ya no quiere verse a sí mismo</strong>, o que el pasado se volvió borroso a propósito.
+      </div>
+    </div>
+
+    <div class="in-section">
+      <div class="in-section-label"><span class="in-section-num">02</span><span class="in-section-title">Los 3 niveles de lectura</span></div>
+      <p class="in-text">En RedLab vas a moverte entre tres capas de comprensión. Cada nivel del juego entrena una de ellas:</p>
+      <div class="levels-of-meaning">
+        <div class="lom-row">
+          <div class="lom-label" style="color:#2558a8">Literal</div>
+          <div class="lom-desc">Lo que el texto <strong>dice explícitamente</strong>: hechos, nombres, lugares, acciones. Es la base — si te la pierdes, todo lo demás se derrumba.</div>
+        </div>
+        <div class="lom-row">
+          <div class="lom-label" style="color:#5c3d7c">Inferencial</div>
+          <div class="lom-desc">Lo que el texto <strong>no dice pero se deduce</strong>: emociones implícitas, relaciones entre personajes, causas y consecuencias.</div>
+        </div>
+        <div class="lom-row">
+          <div class="lom-label" style="color:#bf3728">Crítico-simbólico</div>
+          <div class="lom-desc">Lo que el texto <strong>representa o denuncia</strong>: metáforas, símbolos, crítica social. Aquí el lector dialoga con el autor.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="in-section">
+      <div class="in-section-label"><span class="in-section-num">03</span><span class="in-section-title">Tips para mejorar tu comprensión lectora</span></div>
+      <div class="tips-grid">
+        <div class="tip-card">
+          <div class="tip-num">01</div>
+          <div class="tip-title">Lee el fragmento dos veces</div>
+          <div class="tip-text">La primera vez para ubicarte, la segunda para notar detalles que se te escaparon: un objeto, un gesto, una palabra repetida.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-num">02</div>
+          <div class="tip-title">Subraya mentalmente lo extraño</div>
+          <div class="tip-text">Si algo te llama la atención o no encaja del todo, ahí suele estar escondido el significado más profundo del texto.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-num">03</div>
+          <div class="tip-title">Pregúntate "¿por qué esto y no otra cosa?"</div>
+          <div class="tip-text">Los autores eligen cada palabra. Si dice "arrastraba" y no "caminaba", esa elección ya te está diciendo algo.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-num">04</div>
+          <div class="tip-title">Conecta con lo que ya sabes</div>
+          <div class="tip-text">Relaciona el fragmento con noticias, lugares reales o situaciones que conoces. La ficción casi siempre habla de algo real.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-num">05</div>
+          <div class="tip-title">Diferencia narrador y autor</div>
+          <div class="tip-text">Quien narra no siempre piensa como quien escribe. Un narrador puede mentir, exagerar o no entender lo que le pasa.</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-num">06</div>
+          <div class="tip-title">El silencio también significa</div>
+          <div class="tip-text">Lo que un personaje NO dice, NO hace o evita, suele ser tan importante como lo que sí aparece en el texto.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="in-actions">
+      <button class="btn-enter" onclick="ctaFromIntro()">Ya entendí, ¡a jugar! <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="btn-light" onclick="goTo('welcome')">← Volver al inicio</button>
+    </div>
+
+  </div>
+</section>
+<section id="screen-levels" class="screen">
+  <nav class="topbar">
+    <div class="tb-brand"><span class="tb-logo">REDLAB</span><span class="tb-beta">BETA 3</span><span class="tb-sep">/</span><span class="tb-section">Niveles</span></div>
+    <div class="tb-center">
+      <span class="tb-student" id="tb-student-lv">—</span>
+      <div class="server-status off" id="srv-lv"><div class="server-dot"></div><span id="srv-lv-txt">servidor</span></div>
+    </div>
+    <button class="tb-btn" onclick="goTo('intro')" style="margin-right:8px">Guía</button>
+    <div class="tb-score"><span class="tb-pts" id="pts-lv">0</span><div><div class="tb-prog-track"><div class="tb-prog-fill" id="bar-lv" style="width:0%"></div></div><div class="tb-pts-label">puntos</div></div></div>
+  </nav>
+  <div class="lv-hero">
+    <div class="lv-eyebrow au">Ruta de aprendizaje</div>
+    <h1 class="lv-title au d1">¿Cuánto<br>profundizas?</h1>
+    <p class="lv-sub au d2">Cada nivel desbloquea nuevas formas de leer. Avanza completando actividades.</p>
+  </div>
+  <div class="lv-body"><div class="lv-grid" id="lvGrid"></div></div>
+</section>
+
+<!-- ══ STANDS ══ -->
+<section id="screen-stands" class="screen">
+  <nav class="topbar">
+    <div class="tb-brand"><span class="tb-logo">REDLAB</span><span class="tb-beta">BETA 3</span><span class="tb-sep">/</span><span class="tb-section" id="st-lv-label">Básico</span></div>
+    <div class="tb-center"><span class="tb-student" id="tb-student-st">—</span></div>
+    <div class="tb-score"><span class="tb-pts" id="pts-st">0</span><div><div class="tb-prog-track"><div class="tb-prog-fill" id="bar-st" style="width:0%"></div></div><div class="tb-pts-label">puntos</div></div>
+    <button class="tb-btn" style="margin-left:12px" onclick="goTo('levels')">← Niveles</button></div>
+  </nav>
+  <div class="st-hero">
+    <div class="lv-eyebrow" id="st-eyebrow">Nivel</div>
+    <h2 style="font-family:var(--display);font-size:clamp(38px,5vw,62px);letter-spacing:1px;line-height:1;margin-bottom:6px" id="st-title">Elige tu stand</h2>
+    <p style="font-family:var(--serif);font-style:italic;font-size:13px;color:var(--text2)" id="st-sub">Selecciona una modalidad de actividad.</p>
+  </div>
+  <div style="max-width:1100px;width:100%;margin:0 auto;padding-bottom:40px"><div class="st-grid" id="stGrid"></div></div>
+</section>
+
+<!-- ══ ACTIVITY ══ -->
+<section id="screen-activity" class="screen">
+  <nav class="topbar">
+    <div class="tb-brand"><span class="tb-logo">REDLAB</span><span class="tb-beta">BETA 3</span><span class="tb-sep">/</span><span class="tb-section" id="act-tb">Stand</span></div>
+    <div class="tb-center"><span class="tb-student" id="tb-student-act">—</span></div>
+    <div class="tb-score"><span class="tb-pts" id="pts-act">0</span><div><div class="tb-prog-track"><div class="tb-prog-fill" id="bar-act" style="width:0%"></div></div><div class="tb-pts-label">puntos</div></div>
+    <button class="tb-btn" style="margin-left:12px" onclick="goTo('stands')">← Stands</button></div>
+  </nav>
+  <div class="act-wrap" id="actWrap"></div>
+</section>
+
+<!-- ══ SUMMARY ══ -->
+<section id="screen-summary" class="screen">
+  <nav class="topbar" style="position:relative;z-index:1">
+    <div class="tb-brand"><span class="tb-logo">REDLAB</span><span class="tb-beta">BETA 3</span></div>
+    <div class="tb-score"><span class="tb-pts" id="pts-sum">0</span><div><div class="tb-prog-track"><div class="tb-prog-fill" id="bar-sum" style="width:0%"></div></div><div class="tb-pts-label">puntos</div></div></div>
+    <div></div>
+  </nav>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 40px;text-align:center;">
+    <div class="sum-stamp">Nivel completado</div>
+    <div class="sum-title">RED<span>LAB</span></div>
+    <p class="sum-sub" id="sum-msg">¡Excelente trabajo!</p>
+    <div class="sum-grid" id="sumGrid"></div>
+    <div id="sum-server-msg"></div>
+    <div id="sum-streak-msg"></div>
+    <div class="sum-acts" style="margin-top:24px">
+      <button class="btn-sum-s" onclick="goTo('levels')">← Cambiar nivel</button>
+      <button class="btn-sum-p" onclick="goTo('stands')">Continuar →</button>
+    </div>
+  </div>
+</section>
+
+<div class="toast" id="toast">✦ <span id="toast-txt">+15 pts</span></div>
+
+<script>
+/* ══════════════════════════════════════════════
+   BANCO DE ACTIVIDADES — 48 en total
+   4 por cada combinación nivel(3) × stand(4)
+══════════════════════════════════════════════ */
+const DATA = {
+
+/* ─────────────────────────────── BÁSICO ─── */
+basico: {
+  lectura: [
+    { frag:"Bogotá era una ciudad que se devoraba a sus propios hijos. Rodrigo lo sabía cada vez que cruzaba el puente de la Calle 26 antes del amanecer, mirando los ríos de luz de los carros que nunca dormían. Llevaba un termo de café en la mano izquierda y el periódico del día anterior bajo el brazo derecho. Nadie lo esperaba al otro lado, pero eso ya no le importaba.",
+      obra:"La oscuridad nuestra de cada día",
+      pregunta:"¿Qué lleva Rodrigo en la mano izquierda y qué lleva bajo el brazo derecho?",
+      opts:["A. El periódico bajo el brazo izquierdo y el termo en la mano derecha","B. Un termo de café en la mano izquierda y el periódico del día anterior bajo el brazo derecho","C. El termo bajo el brazo derecho y el periódico en la mano izquierda","D. Solo el periódico de hoy, sin nada en las manos"],
+      ok:1, exp:"El texto es preciso: 'un termo de café en la mano izquierda y el periódico del día anterior bajo el brazo derecho'. Las otras opciones invierten las manos o cambian el objeto." },
+    { frag:"El apartamento olía a cigarrillos baratos y promesas rotas. Sobre la mesa había tres cartas sin abrir, dos tazas de café frío y una botella vacía de aguardiente. Mariana no había salido en cuatro días, aunque sí había contestado el teléfono dos veces.",
+      obra:"Satanás",
+      pregunta:"¿Cuántas cartas había sobre la mesa y cuántos días llevaba Mariana sin salir?",
+      opts:["A. Dos cartas y tres días","B. Cuatro cartas y dos días","C. Tres cartas y cuatro días","D. Tres cartas y dos días"],
+      ok:2, exp:"El texto dice 'tres cartas sin abrir' y 'no había salido en cuatro días'. La trampa es confundir los números entre sí: las otras opciones mezclan las cifras que sí aparecen pero en posiciones incorrectas." },
+    { frag:"El hombre del sombrero café entró al Café Pasaje a las tres de la tarde y pidió un tinto sin azúcar. Se sentó siempre en la misma mesa del rincón, de espaldas a la pared, con la vista fija en la puerta. El mesero, que ya lo conocía, ni siquiera le preguntó qué quería.",
+      obra:"Bello animal",
+      pregunta:"¿Cómo estaba sentado el hombre del sombrero?",
+      opts:["A. De frente a la pared, con vista a la ventana","B. En el centro del salón, mirando a otros clientes","C. En el rincón, de espaldas a la pared, con la vista fija en la puerta","D. En la barra, de lado a la entrada"],
+      ok:2, exp:"El texto especifica tres detalles de posición simultáneos: 'mesa del rincón', 'de espaldas a la pared' y 'vista fija en la puerta'. La C es la única opción que reproduce los tres." },
+    { frag:"El bus pasó de largo. Era el tercero que hacía lo mismo. Camila miró el reloj: las seis y cuarto de la mañana. Tenía que estar en el trabajo a las siete y su jefe ya la había amonestado dos veces por llegar tarde ese mes. Decidió caminar.",
+      obra:"La ciudad de los umbrales",
+      pregunta:"¿Cuántos buses pasaron de largo y cuántas veces la habían amonestado ese mes?",
+      opts:["A. Dos buses y tres amonestaciones","B. Tres buses y dos amonestaciones","C. Cuatro buses y dos amonestaciones","D. Tres buses y una amonestación"],
+      ok:1, exp:"El texto dice 'era el tercero' (tres buses) y 'ya la había amonestado dos veces'. La B combina correctamente ambas cifras sin invertirlas ni alterarlas." },
+    { frag:"Don Pedro vendía lotería en la esquina del Parque Nacional desde hacía treinta años. Su puesto era una mesa plegable con un mantel azul y una sombrilla roja. Llegaba siempre a las ocho de la mañana y se iba a las seis de la tarde.",
+      obra:"La importancia de morir a tiempo",
+      pregunta:"¿A qué hora llegaba Don Pedro y a qué hora se iba?",
+      opts:["A. A las siete de la mañana y a las cinco de la tarde","B. A las ocho de la mañana y a las seis de la tarde","C. A las nueve de la mañana y a las seis de la tarde","D. A las ocho de la mañana y a las siete de la tarde"],
+      ok:1, exp:"El texto es claro: 'llegaba siempre a las ocho de la mañana y se iba a las seis de la tarde'. Cada opción incorrecta cambia una de las dos horas en una hora más o una hora menos." },
+    { frag:"La señora Ríos cocinó para seis personas esa noche. Puso seis platos, seis vasos, pero solo cinco cubiertos completos porque uno de los tenedores se había perdido semanas atrás. Luego se sentó sola a la mesa y esperó hasta las diez. Recogió todo sin comer nada y fue a dormir.",
+      obra:"La oscuridad nuestra de cada día",
+      pregunta:"¿Para cuántas personas cocinó la señora Ríos y por qué solo había cinco cubiertos?",
+      opts:["A. Para cinco personas; porque rompió un cuchillo","B. Para seis personas; porque uno de los tenedores se había perdido","C. Para siete personas; porque un plato estaba sucio","D. Para seis personas; porque le faltaba una cuchara"],
+      ok:1, exp:"El texto dice 'cocinó para seis personas' y que solo había cinco cubiertos 'porque uno de los tenedores se había perdido semanas atrás'. La B reproduce ambos datos exactamente." },
+    { frag:"Cada vez que sonaba el teléfono en esa casa, los niños dejaban de reír. La madre cerraba los ojos un segundo antes de contestar, siempre con la mano derecha. El padre miraba hacia la ventana y se quedaba así hasta que ella colgaba.",
+      obra:"Bello animal",
+      pregunta:"¿Qué hacía la madre cada vez que sonaba el teléfono?",
+      opts:["A. Contestaba con la mano izquierda y cerraba los ojos después","B. Miraba hacia la ventana igual que el padre","C. Cerraba los ojos un segundo antes de contestar siempre con la mano derecha","D. Dejaba sonar el teléfono sin contestar"],
+      ok:2, exp:"El texto describe: 'cerraba los ojos un segundo antes de contestar, siempre con la mano derecha'. La C reproduce los tres detalles: el momento (antes), el gesto (ojos cerrados) y la mano (derecha)." },
+    { frag:"El taxi se detuvo en el semáforo de la calle 72 con séptima. El conductor llevaba veinte años manejando y conocía ese semáforo: tardaba exactamente cuarenta y cinco segundos en cambiar. Aprovechó para beber el último sorbo de su tinto.",
+      obra:"Perder es cuestión de método",
+      pregunta:"¿Cuántos años llevaba manejando el conductor y cuántos segundos tardaba ese semáforo?",
+      opts:["A. Quince años y cuarenta segundos","B. Veinte años y cuarenta y cinco segundos","C. Veinte años y cincuenta segundos","D. Cuarenta y cinco años y veinte segundos"],
+      ok:1, exp:"El texto precisa 'veinte años manejando' y 'exactamente cuarenta y cinco segundos'. La B combina las dos cifras correctamente. La D las invierte." },
+    { frag:"La librería cerró un martes. Nadie puso un aviso. Al día siguiente, donde antes estaban los libros había cajas de cartón apiladas hasta el techo y dos hombres con guantes azules que no respondían preguntas.",
+      obra:"La ciudad de los umbrales",
+      pregunta:"¿Qué había al día siguiente donde antes estaban los libros?",
+      opts:["A. Un aviso de cierre y estantes vacíos","B. Cajas de cartón apiladas hasta el techo y dos hombres con guantes azules","C. Nuevos libros de otra librería","D. Solo los dos hombres, sin cajas"],
+      ok:1, exp:"El texto describe exactamente: 'cajas de cartón apiladas hasta el techo y dos hombres con guantes azules'. La A inventa el aviso — el texto dice que nadie lo puso. La D omite las cajas que sí se mencionan." },
+    { frag:"Verónica tenía tres despertadores: uno a las cinco, otro a las cinco y cuarto y el último a las cinco y veinte. Los tres sonaban. Los tres eran apagados. A las seis seguía en la cama mirando el techo.",
+      obra:"Scorpio City",
+      pregunta:"¿A qué horas estaban programados los tres despertadores?",
+      opts:["A. A las cinco, las cinco y media y las seis","B. A las cuatro y media, las cinco y las cinco y media","C. A las cinco, las cinco y cuarto y las cinco y veinte","D. A las cinco y cuarto, las cinco y media y las seis"],
+      ok:2, exp:"El texto enumera con precisión: 'uno a las cinco, otro a las cinco y cuarto y el último a las cinco y veinte'. Cualquier otra combinación altera al menos una de las tres horas exactas." }
+  ],
+  interpretacion: [
+    { frag:"Caminaba entre la gente como si fuera invisible. Sus zapatos rotos dejaban huellas de agua sobre el mármol del centro comercial. Nadie lo miraba.",
+      obra:"La ciudad de los umbrales",
+      pregunta:"El fragmento usa tres recursos para construir exclusión: una comparación, un contraste de materiales y una negación. ¿Cuál opción identifica los tres correctamente?",
+      opts:["A. Comparación: 'zapatos rotos'; contraste: 'nadie lo miraba'; negación: 'como si fuera invisible'","B. Comparación: 'como si fuera invisible'; contraste: zapatos rotos vs. mármol; negación: 'nadie lo miraba'","C. Comparación: 'huellas de agua'; contraste: 'centro comercial'; negación: 'zapatos rotos'","D. Comparación: 'nadie lo miraba'; contraste: 'invisible vs. visible'; negación: 'huellas de agua'"],
+      ok:1, exp:"'Como si fuera invisible' es el símil (comparación). Los zapatos rotos sobre el mármol construyen el contraste precariedad/lujo. 'Nadie lo miraba' es la negación que cierra el ciclo. Cada recurso cumple una función distinta en la construcción de la exclusión." },
+    { frag:"Cada mañana el despertador sonaba a las cinco. Él lo apagaba. Volvía a sonar. Lo volvía a apagar. El trabajo ya no existía, pero el despertador seguía funcionando.",
+      obra:"Scorpio City",
+      pregunta:"Si reemplazaras 'el despertador' por 'la esperanza' en todo el fragmento, ¿qué dimensión semántica nueva aparece que no estaba explícita en el original?",
+      opts:["A. La historia se volvería religiosa, porque la esperanza es un tema espiritual","B. Emergería la idea de que el personaje lucha activamente contra la fe, algo que el original no sugiere","C. La esperanza como rutina mecánica que persiste sin objeto: el personaje que 'apaga' la esperanza pero no puede eliminarla revela una voluntad de vivir en conflicto con su situación","D. El texto perdería sentido porque 'esperanza' no puede sonar ni apagarse literalmente"],
+      ok:2, exp:"La sustitución revela lo que el objeto mecánico apenas insinúa: si el despertador es metáfora de la esperanza, el gesto de apagarlo repetidamente sin poder eliminarlo describe una voluntad de vivir que el propio personaje intenta suprimir. El original lo enmascara bajo lo cotidiano." },
+    { frag:"Laura guardaba cada carta en una caja de zapatos debajo de la cama. Nunca las había respondido. Nunca las abriría. Pero tampoco podía tirarlas.",
+      obra:"El día del juicio",
+      pregunta:"El texto construye una paradoja de tres movimientos (pasado / futuro / presente). ¿Qué figura retórica describe exactamente esa estructura y cuál es su efecto?",
+      opts:["A. Hipérbole: exagera la dificultad emocional de Laura para generar empatía inmediata","B. Anáfora de la negación ('nunca / nunca / tampoco') que crea una acumulación temporal que paraliza a Laura en los tres tiempos a la vez","C. Paradoja simple: Laura guarda lo que no quiere, lo cual es contradictorio pero no tiene estructura temporal","D. Elipsis: el texto omite intencionalmente lo que dice la carta para crear suspenso"],
+      ok:1, exp:"La anáfora de la negación ('Nunca / Nunca / tampoco') no es solo repetición: cada negación clausura un tiempo (pasado, futuro, presente). El efecto es que Laura queda atrapada en los tres tiempos simultáneamente — no puede resolver su pasado, ni proyectar su futuro, ni actuar en su presente." },
+    { frag:"Andrés sonrió cuando le dieron el diploma. Era la misma sonrisa que ponía en las fotos, la que había practicado frente al espejo. Sus padres aplaudieron. Él pensó en salir corriendo.",
+      obra:"Perder es cuestión de método",
+      pregunta:"¿Qué concepto de la semiótica describe mejor la 'sonrisa practicada frente al espejo' en relación con los padres que aplauden?",
+      opts:["A. Polisemia: la sonrisa tiene múltiples significados dependiendo de quién la interprete","B. La sonrisa funciona como signo cuyo significante (expresión facial) está deliberadamente desconectado de su significado real (deseo de huir), produciendo un signo falso o simulacro","C. Ironía dramática: el lector sabe que la sonrisa es falsa, pero los padres no","D. Metonimia: la sonrisa representa al personaje completo en esa escena"],
+      ok:1, exp:"La sonrisa 'practicada' es un simulacro (Baudrillard): un signo que imita la forma de otro signo sin su contenido. El significante (gesto de felicidad) está producido deliberadamente para consumo ajeno, desconectado del significado real (querer huir). Los padres leen el simulacro como real — eso es lo trágico." }
+  ],
+  escritura: [
+    { frag:"El bus se llenó en la calle 80. Él entró de último y se quedó de pie, apretado contra la puerta. A través del vidrio empañado vio su propio reflejo y por un momento no se reconoció.",
+      obra:"La travesía de los cuerpos",
+      consigna:"MISIÓN DOBLE: (1) Escribe el monólogo interior del personaje en ese instante — 4 oraciones en 1ª persona donde el tiempo se detiene en el vidrio. (2) Luego escribe 2 oraciones desde la perspectiva del reflejo, que también ve al personaje y tiene algo que decirle. Deben ser dos voces distintas y en tensión.",
+      hint:"¿Qué sabe el reflejo que el personaje no quiere saber? ¿Y qué sabe el personaje que el reflejo nunca podrá ver?" },
+    { frag:"La lluvia golpeaba el techo de zinc con fuerza. Ella apagó la luz y se quedó sentada en la oscuridad, escuchando. No esperaba nada. Solo escuchaba.",
+      obra:"Los cuerpos del invierno",
+      consigna:"RESTRICCIÓN CREATIVA: Continúa esta escena en exactamente 5 oraciones. REGLA: no puedes usar las palabras 'lluvia', 'oscuridad', 'silencio' ni 'miedo'. Debes transmitir esas sensaciones usando solo imágenes concretas (objetos, sonidos específicos, texturas, temperaturas).",
+      hint:"La restricción de palabras obliga a buscar imágenes más originales. ¿Cómo describes el miedo sin nombrarlo?" },
+    { frag:"No había nada peor que un domingo en Bogotá. La ciudad entera parecía vaciarse de sentido. Los negocios cerrados, el cielo gris, las calles sin nadie. Y la soledad tomando la forma exacta del cuerpo.",
+      obra:"Satanás",
+      consigna:"TRANSFERENCIA: Reescribe este párrafo usando tu propio día más difícil de la semana y tu propio lugar. Conserva la estructura exacta del original (oración de apertura con juicio + descripción de vacío + lista de imágenes + cierre metafórico). Cambia solo el contenido, no la arquitectura.",
+      hint:"La estructura es: 'No hay nada peor que X en Y. Z parece W. [Lista de imágenes]. Y [metáfora corporal del sentimiento].' ¿Puedes llenar esa estructura con tu propia experiencia?" },
+    { frag:"Aprendió a no preguntar. A sonreír en el momento correcto. A desaparecer sin que nadie lo notara. Bogotá le había enseñado esas cosas.",
+      obra:"La oscuridad nuestra de cada día",
+      consigna:"ANÁLISIS + CREACIÓN: (1) Identifica el recurso de repetición que usa Mendoza en este fragmento y explica en 1 oración por qué es efectivo. (2) Escribe tu propia versión de 3 oraciones usando la misma estructura ('Aprendí a... A... A...') pero aplicada a tu experiencia en el colegio o en tu barrio.",
+      hint:"El paralelismo ('A + infinitivo') crea un ritmo acumulativo. ¿Qué tres cosas te ha enseñado tu contexto que nunca están en el currículo?" }
+  ],
+  creativo: [
+    { frag:"El río Bogotá avanzaba negro y silencioso entre las fábricas. Nadie se bañaba en él desde hacía décadas. Pero en las noches, algunos decían escuchar voces que venían del agua.",
+      obra:"Scorpio City",
+      consigna:"🎭 FORMATO: MONÓLOGO CON RESTRICCIÓN. El río Bogotá habla — pero solo puede usar oraciones que empiecen con un color, un número o un nombre de lugar real de Bogotá. Escribe 6 oraciones con esa restricción formal. El río puede acusar, recordar o confesar.",
+      hint:"'Negro era el año en que...' / 'Tres veces intenté...' / 'Desde Soacha recuerdo...' — la restricción obliga a imágenes más concretas y poderosas." },
+    { frag:"No había héroes en esa historia. Solo gente ordinaria tomando decisiones extraordinarias en circunstancias imposibles.",
+      obra:"Bello animal",
+      consigna:"🖊️ FORMATO: MICROCUENTO EN ESPEJO. Escribe un microcuento de 6 oraciones donde la primera y la última son exactamente iguales (o casi). En el medio, algo tiene que cambiar radicalmente — una persona, una decisión, un lugar. El final-espejo debe sonar diferente aunque sea la misma frase.",
+      hint:"'Nadie lo vio salir esa mañana.' ... [5 oraciones de transformación] ... 'Nadie lo vio salir esa mañana.' — ¿cómo cambia el significado de la misma frase cuando ya sabemos lo que ocurrió?" },
+    { frag:"Bogotá me enseñó que sobrevivir no es lo mismo que vivir. Que aguantar no es lo mismo que resistir.",
+      obra:"La importancia de morir a tiempo",
+      consigna:"📝 FORMATO: POEMA DE DICOTOMÍAS ESCALADO. Escribe un poema de exactamente 6 versos usando el modelo 'X no es lo mismo que Y'. REGLA DE ESCALA: cada par debe ser más íntimo y personal que el anterior — el primero puede ser abstracto, el último debe referirse a algo muy específico de tu vida.",
+      hint:"Empieza grande ('Hablar no es lo mismo que decir') y termina pequeño y tuyo ('Llamar no es lo mismo que el martes que no llamé'). El zoom hacia lo personal es el efecto poético." },
+    { frag:"Escribir sobre Bogotá era imposible. La ciudad cambiaba mientras uno escribía. Para cuando terminabas la oración, el lugar ya no existía.",
+      obra:"La ciudad de los umbrales",
+      consigna:"📸 FORMATO: TEXTO EN TIEMPO REAL. Escribe un texto de 8-10 líneas como si lo estuvieras escribiendo mientras el lugar desaparece ante tus ojos. Usa el tiempo presente. En algún punto del texto, algo que describiste al inicio ya no existe cuando llegas al final. Puedes tachar palabras o reescribir oraciones dentro del texto.",
+      hint:"'La tienda de la esquina todavía tiene el letrero rojo. La tienda de la esquina ya no tiene el letrero rojo.' — la escritura puede mostrar el cambio mientras ocurre." }
+  ]
+},
+
+/* ────────────────────────────── INTERMEDIO ─── */
+intermedio: {
+  lectura: [
+    { frag:"Don Armando llevaba veinte años manejando el mismo taxi. Conocía cada hueco de la ciudad, cada atajo, cada esquina peligrosa. Esa noche recogió a un pasajero en Chapinero a las once y media. El hombre no dijo ninguna dirección. Solo dijo: maneje. Don Armando condujo durante cuarenta minutos antes de que el pasajero hablara de nuevo.",
+      obra:"Perder es cuestión de método",
+      pregunta:"¿Cuánto tiempo lleva Don Armando manejando y cuántos minutos condujo sin que el pasajero hablara?",
+      opts:["A. Quince años y cuarenta minutos","B. Veinte años y treinta minutos","C. Veinte años y cuarenta minutos","D. Cuarenta años y veinte minutos"],
+      ok:2, exp:"El texto dice 'veinte años manejando' y 'condujo durante cuarenta minutos antes de que el pasajero hablara de nuevo'. La C combina los dos datos exactos. La D los invierte." },
+    { frag:"El expediente de Juliana tenía dieciséis páginas. El juez lo leyó en tres minutos, lo cerró y lo dejó sobre la pila de los casos sin resolver, que ya sumaba cuarenta y dos carpetas ese mes. Afuera, ella seguía esperando en la misma silla de plástico de siempre, la tercera desde la puerta.",
+      obra:"La vendedora de rosas",
+      pregunta:"¿En qué silla esperaba Juliana y cuántas carpetas sumaba la pila de casos sin resolver?",
+      opts:["A. La segunda silla y cuarenta carpetas","B. La tercera silla y cuarenta y dos carpetas","C. La tercera silla y dieciséis carpetas","D. La cuarta silla y cuarenta y dos carpetas"],
+      ok:1, exp:"El texto dice 'la misma silla de plástico de siempre, la tercera desde la puerta' y la pila 'ya sumaba cuarenta y dos carpetas ese mes'. La B reproduce exactamente los dos datos sin confundirlos con las dieciséis páginas del expediente." },
+    { frag:"Cada vez que sonaba el teléfono en esa casa, los niños dejaban de reír. La madre cerraba los ojos un segundo antes de contestar, siempre con la mano derecha. El padre miraba hacia la ventana y se quedaba así hasta que ella colgaba.",
+      obra:"Bello animal",
+      pregunta:"¿Qué hacían los tres miembros de la familia cuando sonaba el teléfono? ¿Cuál opción los reproduce todos correctamente?",
+      opts:["A. Los niños se callan; la madre contesta con la mano izquierda; el padre mira la puerta","B. Los niños salen; la madre cierra los ojos y contesta; el padre mira la ventana","C. Los niños dejan de reír; la madre cierra los ojos un segundo antes con la mano derecha; el padre mira la ventana hasta que ella cuelga","D. Los niños lloran; la madre contesta en silencio; el padre cierra los ojos"],
+      ok:2, exp:"La C reproduce los tres detalles exactos: 'dejan de reír' (no se callan ni salen), 'un segundo antes / mano derecha', y 'se quedaba así hasta que ella colgaba'. Cada opción incorrecta altera al menos un detalle de al menos uno de los tres." },
+    { frag:"La señora Ríos cocinó para seis personas esa noche. Puso seis platos, seis vasos, pero solo cinco cubiertos completos porque uno de los tenedores se había perdido semanas atrás. Luego se sentó sola a la mesa y esperó hasta las diez. Recogió todo sin comer nada y fue a dormir.",
+      obra:"La oscuridad nuestra de cada día",
+      pregunta:"¿Hasta qué hora esperó la señora Ríos y qué hizo después de recoger la mesa?",
+      opts:["A. Hasta las nueve; se fue a ver televisión","B. Hasta las once; fue a dormir","C. Hasta las diez; fue a dormir sin comer nada","D. Hasta las diez; comió algo y luego fue a dormir"],
+      ok:2, exp:"El texto dice 'esperó hasta las diez' y 'recogió todo sin comer nada y fue a dormir'. La C reproduce exactamente las dos acciones finales. La D contradice el 'sin comer nada' que el texto especifica." },
+    { frag:"El policía revisó el bolso tres veces. La primera encontró el billete de bus. La segunda, el celular con la pantalla rota. La tercera vez no encontró nada nuevo, pero siguió buscando durante cinco minutos más.",
+      obra:"Scorpio City",
+      pregunta:"¿Qué encontró el policía en la primera y en la segunda revisión?",
+      opts:["A. Primera: celular; segunda: billete de bus","B. Primera: billete de bus; segunda: celular con pantalla rota","C. Primera: documento de identidad; segunda: billete de bus","D. Primera: billete de bus; segunda: nada"],
+      ok:1, exp:"El texto asigna hallazgos específicos: primera revisión = billete de bus, segunda = celular con la pantalla rota. La B reproduce el orden exacto. La A los invierte y la D contradice que en la segunda sí encontró algo." },
+    { frag:"El edificio tenía once pisos. El ascensor solo funcionaba hasta el noveno. Los inquilinos del décimo y el undécimo habían desarrollado, con el tiempo, piernas más fuertes que los del resto.",
+      obra:"La oscuridad nuestra de cada día",
+      pregunta:"¿Cuántos pisos tiene el edificio y hasta cuál llega el ascensor?",
+      opts:["A. Diez pisos; hasta el octavo","B. Once pisos; hasta el décimo","C. Once pisos; hasta el noveno","D. Doce pisos; hasta el noveno"],
+      ok:2, exp:"El texto es claro: 'el edificio tenía once pisos' y 'el ascensor solo funcionaba hasta el noveno'. El décimo y undécimo subían a pie — eso confirma que el ascensor no llega a esos pisos. La C es la única combinación correcta." },
+    { frag:"Encontraron la moto a tres cuadras del lugar del accidente. Tenía el espejo izquierdo roto, el tanque casi vacío y una calcomanía de la selección colombiana en el guardabarros. Las llaves seguían puestas.",
+      obra:"Perder es cuestión de método",
+      pregunta:"¿Dónde estaba la calcomanía y cuál espejo estaba roto?",
+      opts:["A. Calcomanía en el tanque; espejo derecho roto","B. Calcomanía en el espejo; guardabarros roto","C. Calcomanía en el guardabarros; espejo izquierdo roto","D. Calcomanía en el guardabarros; espejo derecho roto"],
+      ok:2, exp:"El texto especifica: 'espejo izquierdo roto' y 'calcomanía de la selección colombiana en el guardabarros'. La C combina correctamente ambos datos. La D invierte el espejo de izquierdo a derecho." },
+    { frag:"Julia había vivido en ese apartamento durante catorce años. Pagaba puntual el primero de cada mes. Nunca había tenido una mascota. Nunca había invitado a nadie a cenar. Cuando la echaron, dejó la llave sobre la mesa y no miró atrás.",
+      obra:"La vendedora de rosas",
+      pregunta:"¿Cuántos años vivió Julia ahí y qué dejó sobre la mesa al salir?",
+      opts:["A. Doce años; dejó las llaves en la puerta","B. Catorce años; dejó la llave sobre la mesa","C. Quince años; dejó una nota sobre la mesa","D. Catorce años; no dejó nada"],
+      ok:1, exp:"El texto dice 'catorce años' y 'dejó la llave sobre la mesa'. La B reproduce exactamente ambos datos. La A cambia el número de años y la ubicación de la llave. La D contradice que sí dejó algo." },
+    { frag:"El informe tenía tres páginas. La primera explicaba el problema. La segunda proponía soluciones. La tercera era una lista de firmas que nadie había llenado todavía. El gerente lo leyó, lo dobló en cuatro y lo guardó en el cajón de la izquierda.",
+      obra:"Bello animal",
+      pregunta:"¿Qué contenía la segunda página y dónde guardó el gerente el informe?",
+      opts:["A. Soluciones; cajón de la derecha","B. El problema; cajón de la izquierda","C. Las firmas; cajón de la izquierda","D. Soluciones; cajón de la izquierda"],
+      ok:3, exp:"El texto dice: segunda página = 'proponía soluciones' y el informe fue guardado 'en el cajón de la izquierda'. La D combina correctamente los dos datos. La A tiene la página correcta pero el cajón equivocado." },
+    { frag:"La abuela recordaba tres cosas de la noche del terremoto: el olor a gas, el sonido de los vidrios quebrándose y el silencio que vino después. El silencio, decía siempre, había durado exactamente siete segundos. Luego todo el mundo empezó a gritar al mismo tiempo.",
+      obra:"La importancia de morir a tiempo",
+      pregunta:"¿Cuántas cosas recordaba la abuela y cuánto duró el silencio según ella?",
+      opts:["A. Dos cosas y cinco segundos","B. Cuatro cosas y siete segundos","C. Tres cosas y diez segundos","D. Tres cosas y siete segundos"],
+      ok:3, exp:"El texto enumera exactamente tres recuerdos y precisa 'exactamente siete segundos' de silencio. La D es la única combinación correcta. La B inventa una cuarta cosa. La C cambia los siete segundos por diez." }
+  ],
+  interpretacion: [
+    { frag:"La ciudad era un animal herido que arrastraba sus vísceras por las calles del centro. Cada semáforo era una llaga. Cada trancón, un coágulo que no sanaba.",
+      obra:"Satanás",
+      pregunta:"El fragmento construye una metáfora extendida (ciudad = animal herido). ¿Cuál de estas afirmaciones describe con mayor precisión cómo funciona esa metáfora a nivel semántico?",
+      opts:["A. La ciudad se compara con un animal para hacerla más simpática y cercana al lector","B. La metáfora zoomorfa transforma lo inorgánico en orgánico, convirtiendo la disfunción urbana (semáforos, trancones) en síntomas de un cuerpo que sufre — la ciudad no falla, está enferma","C. Los semáforos y trancones son metáforas de la corrupción política colombiana","D. El autor usa términos médicos para mostrar que estudió medicina antes de ser escritor"],
+      ok:1, exp:"La metáfora no es decorativa: transforma la categoría ontológica de la ciudad de 'sistema' a 'organismo'. Al hacerlo, los problemas urbanos pasan de ser errores de planeación a síntomas de enfermedad — lo que implica sufrimiento, no solo mal funcionamiento. La ciudad no está rota: está herida." },
+    { frag:"No todos los muertos de esta ciudad habían recibido bala. Algunos habían muerto de espera. De formulario. De ventanilla cerrada.",
+      obra:"La importancia de morir a tiempo",
+      pregunta:"¿Qué tipo de violencia nombra el fragmento y qué recurso retórico usa para hacerla visible?",
+      opts:["A. Violencia física: el fragmento habla de muertos reales por causas no explicitadas","B. La burocracia como violencia simbólica: la acumulación asindética ('espera / formulario / ventanilla cerrada') eleva causas administrativas al nivel de causas de muerte, denunciando que el Estado mata por omisión","C. Violencia psicológica: los personajes mueren de tristeza y depresión causadas por el sistema","D. Una crítica al sistema de salud colombiano que no atiende a tiempo a los pacientes"],
+      ok:1, exp:"El asíndeton ('de espera. De formulario. De ventanilla cerrada.') no solo lista: acumula causas de muerte cada vez más absurdas y cotidianas hasta que la denuncia se vuelve insostenible. La violencia burocrática se equipara a la bala — eso es lo que hace literariamente poderoso al fragmento." },
+    { frag:"Bogotá tenía el don de hacer sentir a sus habitantes que todo lo que les pasaba era culpa suya. La ciudad absolvía a los culpables y condenaba a las víctimas.",
+      obra:"Scorpio City",
+      pregunta:"El fragmento invierte el orden moral esperado. ¿Qué concepto describe con mayor precisión ese mecanismo y cómo funciona en el texto?",
+      opts:["A. Hipérbole: exagera la injusticia de Bogotá para producir indignación","B. El fragmento describe la culpabilización de la víctima como estructura ideológica: la ciudad (metonimia del sistema) produce subjetividades que interiorizan la responsabilidad de su propia opresión, liberando al sistema de cualquier responsabilidad","C. Ironía: el autor dice lo contrario de lo que piensa para criticar la cultura bogotana","D. Personificación de Bogotá: la ciudad tiene sentimientos y actúa como un juez malvado"],
+      ok:1, exp:"La culpabilización de la víctima no es solo injusticia — es una estructura ideológica que el fragmento denuncia. La ciudad (el sistema) 'tiene el don' de producir esta culpa: no la impone por la fuerza, sino que la hace sentir natural. Eso es lo más sofisticado y lo más aterrador del mecanismo." },
+    { frag:"Los personajes de Mendoza no mueren de bala ni de enfermedad. Mueren de ciudad. Mueren de lunes. Mueren de la acumulación lenta de todo lo que no pudieron decir.",
+      obra:"Bello animal",
+      pregunta:"La frase 'mueren de lunes' es semánticamente anómala porque 'lunes' no es una causa de muerte convencional. ¿Qué efecto produce esa anomalía en el contexto de la serie?",
+      opts:["A. Es un error del autor que debería decir 'mueren los lunes' (día de la semana como momento)","B. La anomalía semántica ('lunes' como causa de muerte) amplía el campo de lo mortal hacia lo cotidiano insignificante, creando una escala que va de lo abstracto ('ciudad') a lo específico ('lunes') a lo invisible ('todo lo que no pudieron decir')","C. 'Lunes' es una metáfora de la depresión clínica que afecta a los personajes de Mendoza","D. El autor usa el lunes como símbolo de la semana laboral y la explotación económica"],
+      ok:1, exp:"La anomalía semántica es intencional: 'morir de lunes' fuerza al lector a aceptar que lo mundano puede ser mortal. La serie (ciudad → lunes → lo no dicho) construye una escala descendente de lo macro a lo micro: la muerte no llega de fuera (bala) sino de adentro, de la acumulación de lo pequeño e inexpresable." }
+  ],
+  escritura: [
+    { frag:"Don Armando llevaba veinte años manejando el mismo taxi. Esa noche recogió a un pasajero en Chapinero a las once y media. El hombre no dijo ninguna dirección. Solo dijo: maneje.",
+      obra:"Perder es cuestión de método",
+      consigna:"DOBLE VOZ EN TENSIÓN: Escribe la misma escena dos veces, de 3 oraciones cada una. Primera vez: desde el punto de vista de Don Armando (qué ve, qué piensa, qué teme). Segunda vez: desde el punto de vista del pasajero (qué ve, qué piensa, qué calla). Las dos versiones deben ser incompatibles — cada uno debe malinterpretar al otro.",
+      hint:"La misma acción vista desde dos perspectivas puede producir significados opuestos. ¿Qué interpreta Don Armando del silencio del pasajero? ¿Y el pasajero del nerviosismo del taxista?" },
+    { frag:"El expediente de Juliana tenía dieciséis páginas. El juez lo leyó en tres minutos, lo cerró y lo dejó sobre la pila de los casos sin resolver.",
+      obra:"La vendedora de rosas",
+      consigna:"AMPLIACIÓN CRÍTICA: (1) Escribe en 2 oraciones qué recurso narrativo usa Mendoza en este fragmento y cuál es su efecto en el lector. (2) Continúa el fragmento: escribe lo que Juliana piensa afuera mientras el juez cierra el expediente adentro. Mínimo 4 oraciones. Las dos acciones deben ocurrir simultáneamente en tu texto.",
+      hint:"La simultaneidad (dos acciones al mismo tiempo en espacios distintos) es uno de los recursos más potentes de la narrativa. ¿Cómo se conectan sin que los personajes lo sepan?" },
+    { frag:"Bogotá tenía el don de hacer sentir a sus habitantes que todo lo que les pasaba era culpa suya.",
+      obra:"Scorpio City",
+      consigna:"ANÁLISIS + APLICACIÓN: (1) ¿Qué tipo de violencia describe este fragmento? Nómbrala y explica en 2 oraciones. (2) Escribe un párrafo de 4 oraciones describiendo un momento en el que tú (o alguien que conoces) sintió que algo que le hizo el sistema era culpa propia. Usa imágenes concretas, no abstracciones.",
+      hint:"La violencia simbólica actúa mejor cuando es invisible. ¿Cuándo has sentido que algo injusto era tu responsabilidad?" },
+    { frag:"Los personajes de Mendoza no mueren de bala ni de enfermedad. Mueren de ciudad. Mueren de lunes. Mueren de la acumulación lenta de todo lo que no pudieron decir.",
+      obra:"Bello animal",
+      consigna:"ESCRITURA ESCALADA: Escribe tu propia versión de este párrafo sobre algo que conoces bien — puede ser una institución, un lugar, una relación. Usa la estructura exacta: 'No mueren de X ni de Y. Mueren de Z. Mueren de W. Mueren de [la acumulación de lo no dicho].' Luego escribe 2 oraciones explicando qué elegiste y por qué.",
+      hint:"¿De qué mueren las amistades del colegio? ¿De qué mueren los sueños de una generación? ¿De qué muere la confianza en una institución?" }
+  ],
+  creativo: [
+    { frag:"La ciudad era un animal herido que arrastraba sus vísceras por las calles del centro.",
+      obra:"Satanás",
+      consigna:"🎭 FORMATO: METÁFORA EXTENDIDA PROPIA. Escribe un párrafo de 6-8 oraciones donde tu ciudad, tu colegio o tu barrio sea un animal específico (elige tú cuál). Desarrolla la metáfora: ¿cómo se mueve ese animal? ¿qué come? ¿de qué tiene miedo? ¿cuándo duerme? Cada oración debe sostener la metáfora sin romperla.",
+      hint:"Si tu barrio fuera un animal, ¿sería un perro callejero, una serpiente, un cóndor herido, una cucaracha que sobrevive todo? La elección del animal ya es una declaración." },
+    { frag:"No todos los muertos de esta ciudad habían recibido bala. Algunos habían muerto de espera. De formulario. De ventanilla cerrada.",
+      obra:"La importancia de morir a tiempo",
+      consigna:"🖊️ FORMATO: LISTA POÉTICA CON GIRO. Escribe una lista de 8 líneas de cosas de las que alguien puede 'morir' en tu contexto (tu colegio, tu familia, tu barrio). Las primeras 5 deben ser concretas y reconocibles. Las últimas 3 deben sorprender — deben nombrar cosas que nadie esperaría como causas de muerte. El giro final debe ser el más poderoso.",
+      hint:"'Morir de lista de espera' es obvio. 'Morir de la canción que sonaba esa tarde' ya es poesía. ¿Qué hay en el límite entre lo cotidiano y lo insoportable?" },
+    { frag:"Bogotá me enseñó que sobrevivir no es lo mismo que vivir. Que aguantar no es lo mismo que resistir.",
+      obra:"La importancia de morir a tiempo",
+      consigna:"📝 FORMATO: MANIFIESTO BREVE. Escribe un manifiesto de 8-10 líneas que empiece con 'Aprendí que...' y declare las cosas que tu generación sabe que las generaciones anteriores no quisieron enseñarles. Usa el mismo ritmo acumulativo del fragmento. El manifiesto debe terminar con una declaración de lo que vas a hacer diferente.",
+      hint:"Un manifiesto no pide permiso. Declara. ¿Qué sabe tu generación sobre sobrevivir, aguantar, resistir, que nadie les enseñó formalmente?" },
+    { frag:"Los personajes de Mendoza no mueren de bala ni de enfermedad. Mueren de ciudad.",
+      obra:"Bello animal",
+      consigna:"📸 FORMATO: POSTAL LITERARIA. Escribe una postal de 6-8 líneas enviada desde un lugar de tu ciudad a alguien que nunca lo ha visto. La postal debe mostrar la belleza Y el dolor del lugar en las mismas líneas — no separados, sino mezclados. Termina con una frase que sea invitación y advertencia al mismo tiempo.",
+      hint:"'Ven a ver el cerro al amanecer. Pero no llegues tarde — la ciudad cambia de humor y de cara cuando el sol se esconde.' — la postal literaria no miente, pero tampoco todo lo dice." }
+  ]
+},
+
+/* ──────────────────────────────── AVANZADO ─── */
+avanzado: {
+  lectura: [
+    { frag:"El narrador dice que amaba a su madre. Luego describe con detalle clínico cómo organizó sus cosas después del velorio: catorce vestidos donados, ocho cajas de libros vendidas y un solo objeto que se quedó — una pulsera de plata, guardada en el cajón izquierdo de su escritorio. La palabra 'amor' no vuelve a aparecer.",
+      obra:"Satanás",
+      pregunta:"¿Cuántos vestidos donó, cuántas cajas de libros vendió y en qué cajón guardó la pulsera?",
+      opts:["A. Doce vestidos, ocho cajas, cajón derecho","B. Catorce vestidos, ocho cajas, cajón izquierdo","C. Catorce vestidos, seis cajas, cajón izquierdo","D. Ocho vestidos, catorce cajas, cajón izquierdo"],
+      ok:1, exp:"El inventario es preciso: 'catorce vestidos donados, ocho cajas de libros vendidas' y la pulsera 'guardada en el cajón izquierdo'. La B reproduce los tres datos. La D invierte los números de vestidos y cajas." },
+    { frag:"El narrador contó, en solo dos cuadras del barrio La Candelaria, once afiches de campañas políticas vencidas y tres grafitis firmados con el mismo nombre: Eros. Quien supiera leer esa escritura entendería la historia completa. Pero nadie miraba los muros.",
+      obra:"Perder es cuestión de método",
+      pregunta:"¿Cuántos afiches y cuántos grafitis contó el narrador, y en cuántas cuadras?",
+      opts:["A. Doce afiches, tres grafitis, una cuadra","B. Once afiches, cuatro grafitis, dos cuadras","C. Once afiches, tres grafitis, dos cuadras","D. Trece afiches, tres grafitis, dos cuadras"],
+      ok:2, exp:"El texto especifica: 'en solo dos cuadras', 'once afiches de campañas políticas vencidas' y 'tres grafitis firmados con el mismo nombre: Eros'. La C reproduce los tres datos exactos." },
+    { frag:"Los viejos contaban que ya iban tres generaciones — la del abuelo, la del padre y la del hijo — que habían visto enterrar a alguien en abril. Los jóvenes creían que esta vez sería diferente. No lo fue.",
+      obra:"La importancia de morir a tiempo",
+      pregunta:"¿Cuántas generaciones mencionan los viejos y en qué mes ocurría el patrón?",
+      opts:["A. Dos generaciones; en marzo","B. Tres generaciones; en mayo","C. Cuatro generaciones; en abril","D. Tres generaciones; en abril"],
+      ok:3, exp:"El texto dice 'tres generaciones — la del abuelo, la del padre y la del hijo' y que habían visto enterrar a alguien 'en abril'. La D combina exactamente ambos datos sin alterarlos." },
+    { frag:"El cronista llevaba un cuaderno donde, en apenas seis meses, había tachado el nombre de cuatro calles renombradas y marcado con una cruz nueve edificios demolidos.",
+      obra:"La ciudad de los umbrales",
+      pregunta:"¿En cuánto tiempo tachó cuántas calles y marcó cuántos edificios?",
+      opts:["A. En seis meses, cuatro calles y nueve edificios","B. En nueve meses, cuatro calles y seis edificios","C. En seis meses, nueve calles y cuatro edificios","D. En cuatro meses, seis calles y nueve edificios"],
+      ok:0, exp:"El texto precisa: 'en apenas seis meses', 'cuatro calles renombradas' y 'nueve edificios demolidos'. La A reproduce correctamente el tiempo y los dos conteos. Las otras opciones intercambian los números." },
+    { frag:"Había dos Colombias. La que aparecía en las fotos de los periódicos, con gente sonriente y estadísticas de crecimiento. Y la otra, que no cabía en ningún encuadre, que vivía entre las grietas de los reportajes.",
+      obra:"La oscuridad nuestra de cada día",
+      pregunta:"Según el texto, ¿cómo se describe la primera Colombia?",
+      opts:["A. La que vivía entre las grietas de los reportajes","B. La que no cabía en ningún encuadre","C. La que aparecía en las fotos de los periódicos, con gente sonriente y estadísticas de crecimiento","D. La que mostraba la violencia y la pobreza reales del país"],
+      ok:2, exp:"El texto describe la primera Colombia como 'la que aparecía en las fotos de los periódicos, con gente sonriente y estadísticas de crecimiento'. Las opciones A y B describen la segunda Colombia. La D es una inferencia no presente en el fragmento." },
+    { frag:"El silencio de los testigos no era cobardía. Era un idioma. Un idioma que todos en ese barrio habían aprendido desde niños, cuando entendieron que hablar podía costar más que callar.",
+      obra:"Scorpio City",
+      pregunta:"Según el texto, ¿cuándo aprendieron los habitantes del barrio ese 'idioma' y por qué?",
+      opts:["A. De adultos, cuando presenciaron violencia directa","B. Desde niños, cuando entendieron que hablar podía costar más que callar","C. Nunca aprendieron — el silencio era instintivo y no aprendido","D. En la adolescencia, cuando el barrio cambió de dueños"],
+      ok:1, exp:"El texto es explícito: 'un idioma que todos en ese barrio habían aprendido desde niños, cuando entendieron que hablar podía costar más que callar'. La B reproduce exactamente la condición de aprendizaje." },
+    { frag:"La novela termina sin resolución. El asesino no es nombrado. La víctima no recibe justicia. El investigador abandona el caso. Y la ciudad sigue igual. Exactamente igual.",
+      obra:"Perder es cuestión de método",
+      pregunta:"¿Cuántas cosas quedan sin resolver y cuál es la frase exacta con que cierra el texto?",
+      opts:["A. Dos cosas; 'la ciudad sigue igual'","B. Tres cosas; 'la ciudad sigue igual. Exactamente igual'","C. Cuatro cosas; 'el caso sigue abierto'","D. Tres cosas; 'la ciudad sigue más o menos igual'"],
+      ok:1, exp:"El texto enumera tres ausencias de resolución: asesino sin nombrar, víctima sin justicia, investigador que abandona. El cierre exacto es: 'la ciudad sigue igual. Exactamente igual.' La B reproduce las tres y la frase precisa." },
+    { frag:"Bogotá me enseñó que sobrevivir no es lo mismo que vivir. Que aguantar no es lo mismo que resistir. Y que la diferencia entre las dos cosas es exactamente el espacio donde cabe toda la literatura.",
+      obra:"La importancia de morir a tiempo",
+      pregunta:"¿Cuántas dicotomías presenta el fragmento antes de definir la literatura?",
+      opts:["A. Una sola: sobrevivir / vivir","B. Tres: sobrevivir/vivir, aguantar/resistir y diferencia/literatura","C. Dos: sobrevivir/vivir y aguantar/resistir","D. Cuatro, incluyendo ciudad/campo y día/noche"],
+      ok:2, exp:"El fragmento presenta exactamente dos dicotomías: sobrevivir/vivir y aguantar/resistir. Luego viene la definición de literatura como el espacio entre ellas. La C es correcta. La B cuenta la definición de literatura como si fuera una tercera dicotomía, lo cual no es." },
+    { frag:"Escribió la primera línea de la novela en 1987. La borró en 1994. La reescribió en 2001. En 2008, seguía siendo la misma frase, con tres palabras cambiadas.",
+      obra:"La ciudad de los umbrales",
+      pregunta:"¿En qué año borró la frase, en qué año la reescribió y cuántas palabras habían cambiado en 2008?",
+      opts:["A. 1994, 2001, dos palabras","B. 1994, 2001, tres palabras","C. 1987, 2001, tres palabras","D. 1994, 2008, tres palabras"],
+      ok:1, exp:"El texto precisa: borró en 1994, reescribió en 2001, y en 2008 tenía 'tres palabras cambiadas'. La B combina correctamente las dos fechas intermedias y el número de palabras." },
+    { frag:"La carta tenía tres párrafos. El primero pedía perdón. El segundo explicaba razones. El tercero no tenía palabras — solo una mancha de agua en el papel que podía ser lluvia o podía ser otra cosa.",
+      obra:"Satanás",
+      pregunta:"¿Qué contenía cada párrafo de la carta exactamente?",
+      opts:["A. Primero: razones; segundo: perdón; tercero: una firma borrada","B. Primero: perdón; segundo: razones; tercero: una mancha de agua que podía ser lluvia u otra cosa","C. Primero: perdón; segundo: promesas; tercero: palabras ilegibles","D. Primero: explicaciones; segundo: perdón; tercero: una mancha de agua"],
+      ok:1, exp:"El texto asigna: primer párrafo = pedía perdón, segundo = explicaba razones, tercero = una mancha de agua 'que podía ser lluvia o podía ser otra cosa'. La B reproduce los tres exactamente. La A invierte el orden. La C inventa 'promesas'." }
+  ],
+  interpretacion: [
+    { frag:"Había dos Colombias. La que aparecía en las fotos de los periódicos, con gente sonriente y estadísticas de crecimiento. Y la otra, que no cabía en ningún encuadre, que vivía entre las grietas de los reportajes.",
+      obra:"La oscuridad nuestra de cada día",
+      pregunta:"El fragmento usa 'encuadre' como metáfora central. ¿Cuál opción desarrolla con mayor precisión las implicaciones semánticas de esa metáfora dentro del argumento del texto?",
+      opts:["A. 'Encuadre' es solo una metáfora fotográfica que hace el texto más visual e impactante","B. 'Encuadre' proviene del lenguaje fotográfico/cinematográfico: lo que queda fuera del encuadre no es accidental sino elegido. El fragmento usa eso para denunciar que la exclusión mediática no es descuido sino decisión — la segunda Colombia no 'no cabe', sino que es activamente excluida del marco","C. El texto critica la calidad del periodismo colombiano, que prefiere fotos bonitas a reportajes profundos","D. La metáfora del encuadre sugiere que la realidad colombiana es demasiado compleja para ser fotografiada"],
+      ok:1, exp:"'No cabía en ningún encuadre' parece describir un límite técnico, pero 'encuadre' implica una decisión de quién maneja la cámara. La B desarrolla esa implicación: la exclusión no es limitación sino elección. 'Vivía entre las grietas de los reportajes' refuerza que la segunda Colombia está presente pero deliberadamente marginada." },
+    { frag:"El silencio de los testigos no era cobardía. Era un idioma. Un idioma que todos en ese barrio habían aprendido desde niños, cuando entendieron que hablar podía costar más que callar.",
+      obra:"Scorpio City",
+      pregunta:"¿Qué implica semánticamente definir el silencio como 'idioma' en lugar de como 'miedo', 'trauma' o 'impotencia'?",
+      opts:["A. Que el silencio es una elección consciente y libre de las personas que deciden no hablar","B. Que llamarlo 'idioma' eleva el silencio de síntoma individual (miedo) a sistema colectivo aprendido: tiene gramática (reglas de cuándo callar), historia (se aprende desde niños) y comunidad (todos lo comparten). La metáfora convierte la represión en cultura de supervivencia","C. Que el autor está justificando el silencio cómplice de los testigos ante los crímenes","D. Que el barrio tiene una tradición oral muy rica que el texto celebra como resistencia cultural"],
+      ok:1, exp:"'Idioma' no es solo metáfora sino reencuadre categorial: pasa el silencio de la psicología (trauma, miedo) a la lingüística (sistema, gramática, aprendizaje, comunidad). Un idioma se aprende, se comparte, tiene reglas y produce sentido. El silencio en ese barrio no es ausencia de comunicación — es la forma más sofisticada de comunicar lo que no puede decirse." },
+    { frag:"La novela de Mendoza termina sin resolución. El asesino no es nombrado. La víctima no recibe justicia. El investigador abandona el caso. Y la ciudad sigue igual. Exactamente igual.",
+      obra:"Perder es cuestión de método",
+      pregunta:"¿Qué relación establece el final irresoluto de la novela con la tradición del género noir y con la realidad colombiana específica?",
+      opts:["A. El final abierto es característico del noir latinoamericano porque el público prefiere la ambigüedad a las soluciones definitivas","B. El noir clásico resuelve el crimen y restaura el orden; el noir de Mendoza niega esa resolución porque en Colombia el orden que se restauraría sería el orden injusto. La irresolución narrativa es fidelidad a la irresolución histórica: la impunidad como condición estructural, no como falla ocasional","C. Mendoza deja el final abierto para que el lector imagine una resolución más satisfactoria","D. La falta de resolución es una crítica directa al sistema judicial colombiano y sus problemas concretos"],
+      ok:1, exp:"La clave está en qué se restaura con la resolución del noir clásico: el orden social. Pero en Colombia ese orden incluye la impunidad como componente estructural. Restaurarlo narrativamente sería una mentira. La irresolución de Mendoza no es falla técnica sino honestidad política: la novela no puede ofrecer lo que la realidad niega." },
+    { frag:"Bogotá me enseñó que sobrevivir no es lo mismo que vivir. Que aguantar no es lo mismo que resistir. Y que la diferencia entre las dos cosas es exactamente el espacio donde cabe toda la literatura.",
+      obra:"La importancia de morir a tiempo",
+      pregunta:"La última oración propone que la literatura existe en la diferencia entre pares de conceptos. ¿Cuál es la implicación más precisa de esa definición para entender el proyecto literario de Mendoza?",
+      opts:["A. Que la literatura de Mendoza trata principalmente sobre la supervivencia y la resistencia como temas","B. La oración define la literatura como el espacio de lo que no puede decirse directamente: ni sobrevivir ni vivir, ni aguantar ni resistir, sino la tensión irresoluble entre ellos. El proyecto de Mendoza sería entonces nombrar lo que ocurre en esa brecha — lo que no tiene nombre en el discurso cotidiano ni en el político","C. Que Mendoza considera que solo la literatura puede resolver los problemas sociales de Colombia","D. Es una frase poética sin implicaciones teóricas precisas sobre el proyecto literario del autor"],
+      ok:1, exp:"La definición propuesta no es temática (la literatura no 'trata de' esos temas) sino espacial: existe en la brecha entre los pares. Esa brecha es lo que ningún discurso — ni político, ni periodístico, ni cotidiano — puede nombrar directamente. La literatura de Mendoza habita ese espacio: nombra lo que ocurre entre sobrevivir y vivir, que es donde vive la mayoría de sus personajes." }
+  ],
+  escritura: [
+    { frag:"El detective Torres revisó la escena por tercera vez. Todo encajaba demasiado bien. En veinte años de carrera había aprendido que cuando todo encaja es porque alguien lo armó para que encajara.",
+      obra:"Perder es cuestión de método",
+      consigna:"ANÁLISIS EN TRES CAPAS: Escribe un texto de mínimo 8 oraciones dividido en tres partes marcadas: (1) RECURSO: identifica el recurso narrativo principal del fragmento y su efecto en el lector. (2) ARGUMENTO: explica qué dice el fragmento sobre la relación entre verdad, apariencia y poder. (3) CONEXIÓN: conecta esa idea con un hecho real de Colombia donde 'todo encajaba demasiado bien'. Usa evidencia textual en cada parte.",
+      hint:"La trampa perfecta requiere poder para armarla. ¿Quién tiene ese poder en Colombia? ¿Qué hechos de la historia reciente 'encajaban demasiado bien'?" },
+    { frag:"No había héroes en esa historia. Solo gente ordinaria tomando decisiones extraordinarias en circunstancias imposibles.",
+      obra:"Bello animal",
+      consigna:"CONTRASTE ARGUMENTADO + CREACIÓN: (1) En 3 oraciones, contrasta el concepto de héroe en Mendoza con el héroe del relato épico clásico, usando conceptos específicos (tragedia, agencia, destino, circunstancia). (2) Escribe el primer párrafo de una novela (incipit de 5-6 oraciones) sobre una persona ordinaria de tu entorno en una circunstancia imposible. El incipit debe presentar el mundo, el personaje y el conflicto sin resolverlo.",
+      hint:"Un incipit no cuenta la historia: la abre. ¿Cuál es la primera oración que haría que alguien no pudiera soltar el libro?" },
+    { frag:"Bogotá me enseñó que sobrevivir no es lo mismo que vivir. Que aguantar no es lo mismo que resistir. Y que la diferencia entre las dos cosas es exactamente el espacio donde cabe toda la literatura.",
+      obra:"La importancia de morir a tiempo",
+      consigna:"ENSAYO ARGUMENTATIVO BREVE: Escribe un ensayo de mínimo 8 oraciones donde argumentes cuál de las tres dicotomías del fragmento (sobrevivir/vivir, aguantar/resistir, diferencia/literatura) es más relevante para entender la realidad de los jóvenes colombianos hoy. Debes: (1) enunciar tu tesis, (2) desarrollar 2 argumentos con evidencia o ejemplos, (3) anticipar una objeción y refutarla, (4) concluir con una implicación.",
+      hint:"Una tesis argumentativa no dice 'creo que' — dice 'X es más relevante porque Y, lo cual se evidencia en Z'. ¿Puedes estructurar eso en 8 oraciones?" },
+    { frag:"La ciudad tiene una memoria propia, independiente de los que la habitan. Recuerda los edificios que demolieron, los nombres que cambiaron, las personas que desaparecieron. Esa memoria no está en los libros. Está en las grietas del pavimento.",
+      obra:"La ciudad de los umbrales",
+      consigna:"ENSAYO + INVESTIGACIÓN IMAGINADA: (1) En 3 oraciones, analiza cómo funciona la ciudad como 'archivo' en este fragmento y qué implica que la memoria esté en las grietas y no en los libros. (2) Imagina que eres un investigador que va a 'leer' las grietas de un lugar específico de tu ciudad. Escribe en 5 oraciones qué encontrarías, qué historia contarían esas grietas y qué silencios guardarían. Usa imágenes concretas.",
+      hint:"Las grietas guardan lo que los libros oficiales borraron. ¿Qué hay en las grietas de tu calle, tu barrio, tu colegio que no está en ningún libro de historia?" }
+  ],
+  creativo: [
+    { frag:"Bogotá me enseñó que sobrevivir no es lo mismo que vivir. Que aguantar no es lo mismo que resistir. Y que la diferencia entre las dos cosas es exactamente el espacio donde cabe toda la literatura.",
+      obra:"La importancia de morir a tiempo",
+      consigna:"🎭 FORMATO: REESCRITURA EN TRES VOCES. Reescribe este fragmento tres veces, cada vez en una voz narrativa diferente: (1) primera persona plural ('nosotros aprendimos que...'), (2) segunda persona ('tú sabes que...'), (3) tercera persona impersonal ('se sabe que...'). Luego escribe 2 oraciones sobre cómo el cambio de voz cambia quién es responsable del conocimiento y quién carga con él.",
+      hint:"La voz narrativa distribuye la responsabilidad del saber. 'Yo aprendí' es diferente de 'todos sabemos' — ¿quién sabe más? ¿quién carga más?" },
+    { frag:"No había héroes en esa historia. Solo gente ordinaria tomando decisiones extraordinarias en circunstancias imposibles. Y eso, pensó el viejo, era todo lo que necesitabas para escribir una novela.",
+      obra:"Bello animal",
+      consigna:"🖊️ FORMATO: INCIPIT + METALITERATURA. Escribe el primer párrafo (5-6 oraciones) de una novela sobre tu generación. Luego escribe 3 oraciones donde explicas qué decisión literaria tomaste (voz, tiempo, espacio, personaje) y por qué esa decisión es la más honesta para contar esa historia. La reflexión debe ser tan precisa como el párrafo.",
+      hint:"Los grandes incipits no describen el mundo — lo instalan. ¿Cuál es el detalle que hace que todo lo demás sea diferente? ¿Y por qué elegiste empezar ahí?" },
+    { frag:"El río Bogotá avanzaba negro y silencioso entre las fábricas. Nadie se bañaba en él desde hacía décadas. Pero en las noches, algunos decían escuchar voces que venían del agua.",
+      obra:"Scorpio City",
+      consigna:"📝 FORMATO: POEMA DOCUMENTAL. Escribe un poema de 10-12 versos donde el río Bogotá habla, PERO cada verso debe contener al menos un dato real (histórico, geográfico o ambiental) sobre el río o sobre Bogotá. El poema debe ser simultáneamente denuncia ambiental y acto poético. Incluye al minal una imagen de esperanza que no sea ingenua.",
+      hint:"Un poema documental mezcla la precisión del reportaje con la imagen de la poesía. 'En 1970 mis aguas llegaban al nivel de las rodillas de los niños del Muña' puede ser un verso. ¿Qué datos reales conoces o puedes imaginar?" },
+    { frag:"Escribir sobre Bogotá era imposible. La ciudad cambiaba mientras uno escribía. Para cuando terminabas la oración, el lugar ya no existía: lo habían demolido, renombrado, olvidado.",
+      obra:"La ciudad de los umbrales",
+      consigna:"📸 FORMATO: TEXTO IMPOSIBLE. Escribe un texto de 8-10 líneas que intente describir un lugar mientras reconoce su propia imposibilidad de hacerlo. El texto debe interrumpirse, corregirse o contradecirse a sí mismo al menos dos veces — mostrando que el lugar cambia mientras se escribe. El texto es la prueba de su propio fracaso y de su propia necesidad.",
+      hint:"'El parque todavía tiene los árboles de siempre. Corrección: talaron tres la semana pasada. El parque tiene los árboles que quedan.' — la escritura puede mostrar su propia derrota como forma de honestidad." }
+  ]
+}
+
+}; /* fin DATA */
+
+
+/* ══════════════════════════════════════════════
+   CONFIG
+══════════════════════════════════════════════ */
+const LEVELS = [
+  {id:"basico",    name:"Básico",      badge:"EXPLORADOR", desc:"Comprende hechos, personajes y el mundo visible del texto.", color:"#2558a8", req:0,  acts:10},
+  {id:"intermedio",name:"Intermedio",  badge:"ANALISTA",   desc:"Infiere, interpreta símbolos y descifra capas de sentido.", color:"#5c3d7c", req:8,  acts:14},
+  {id:"avanzado",  name:"Avanzado",    badge:"CRÍTICO",    desc:"Analiza, cuestiona la voz narrativa y crea nuevos sentidos.", color:"#bf3728", req:18, acts:16}
+];
+
+const STANDS = [
+  {id:"lectura",       name:"LECTURA",        sub:"Nivel literal",              idx:"I",   desc:"🔎 Encuentra exactamente lo que el texto dice: hechos, datos y sucesos explícitos.",     color:"#2558a8", type:"mcq",      pts:15},
+  {id:"interpretacion",name:"INTERPRETACIÓN", sub:"Nivel inferencial",          idx:"II",  desc:"🧠 Conecta los hilos invisibles: símbolos, metáforas y lo que el texto sugiere sin decirlo.",   color:"#5c3d7c", type:"mcq",      pts:25},
+  {id:"escritura",     name:"ESCRITURA",      sub:"Nivel crítico-intertextual", idx:"III", desc:"🎭 Toma postura: responde, dialoga o cuestiona desde dentro de la historia.", color:"#1a6854", type:"open",     pts:30},
+  {id:"creativo",      name:"CREATIVO",       sub:"Nivel crítico-productivo",   idx:"IV",  desc:"✒️ Crea: usa lo aprendido para producir un texto nuevo con sentido propio.",color:"#b07d0e", type:"creative", pts:40}
+];
+
+/* ══════════════════════════════════════════════
+   GOOGLE SHEETS — reemplaza el servidor Java
+   Pega tu URL de Apps Script aquí:
+══════════════════════════════════════════════ */
+LEVELS.length=3; STANDS.length=3;
+const SHEETS_URL = "https://script.google.com/macros/s/AKfycbyrlEe4pHlHFRl-KgvdBctEr5V0x75HWY5DM3N8WZ_PF6gIEncOWV5E1HXuii59kBnWMQ/exec";
+
+/* ══════════════════════════════════════════════
+   ESTADO
+══════════════════════════════════════════════ */
+const S = {
+  studentName: "Anónimo",
+  studentCourse: "—",
+  sessionId: Date.now().toString(36),
+  pts: 0,
+  done: {},
+  totalDone: 0,
+  corrects: 0,
+  streak: 0,
+  bestStreak: 0,
+  opens: 0,
+  level: null,
+  stand: null,
+  actIdx: 0,
+  actStartTime: 0,
+  answered: false,
+  selected: null,
+  openText: "",
+  openDone: false,
+  rerollSeed: 0,
+  seenIdx: {},        /* key: "lv_st" → Set de índices ya vistos */
+  serverOnline: false,
+  sessionStart: Date.now()
+};
+
+function doneKey(lv, st) { return lv + "_" + st; }
+function getDone(lv, st) { return S.done[doneKey(lv,st)] || 0; }
+function levelDone(lv)   { return STANDS.reduce((a,s) => a + getDone(lv,s.id), 0); }
+
+/* ══════════════════════════════════════════════
+   INICIO DE SESIÓN
+══════════════════════════════════════════════ */
+function startSession() {
+  const name = document.getElementById("nameInput").value.trim();
+  const course = document.getElementById("courseInput").value.trim();
+  if (!name) { alert("Por favor escribe tu nombre."); return; }
+  if (!course) { alert("Por favor escribe tu curso."); return; }
+  S.studentName = name;
+  S.studentCourse = course;
+  document.getElementById("modalOverlay").classList.add("hidden");
+  document.querySelectorAll('[id^="tb-student-"]').forEach(el => el.textContent = name + " · " + course);
+  checkServer();
+  goTo("levels");
+}
+
+/* ══════════════════════════════════════════════
+   PUNTOS Y BARRAS
+══════════════════════════════════════════════ */
+function addPts(n, label) {
+  S.pts += n;
+  updateBars();
+  showToast("+" + n + " · " + label);
+}
+function updateBars() {
+  const pct = Math.min((S.pts / 800) * 100, 100);
+  document.querySelectorAll('[id^="bar-"]').forEach(el => el.style.width = pct + "%");
+  document.querySelectorAll('[id^="pts-"]').forEach(el => el.textContent = S.pts);
+}
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  document.getElementById("toast-txt").textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2400);
+}
+
+/* ══════════════════════════════════════════════
+   GOOGLE SHEETS — verificar y enviar
+══════════════════════════════════════════════ */
+async function checkServer() {
+  if (!SHEETS_URL || SHEETS_URL === "TU_URL_DE_APPS_SCRIPT_AQUI") {
+    S.serverOnline = false;
+    updateServerUI(false);
+    return;
+  }
+  try {
+    const r = await fetch(SHEETS_URL + "?ping=1", {method:"GET", mode:"no-cors"});
+    S.serverOnline = true;
+    updateServerUI(true);
+  } catch { 
+    S.serverOnline = false;
+    updateServerUI(false); 
+  }
+}
+
+function updateServerUI(online) {
+  const el = document.getElementById("srv-lv");
+  const txt = document.getElementById("srv-lv-txt");
+  if (!el) return;
+  el.className = "server-status " + (online ? "ok" : "off");
+  txt.textContent = online ? "servidor activo" : "sin servidor";
+}
+
+async function sendToServer(payload) {
+  if (!SHEETS_URL || SHEETS_URL === "TU_URL_DE_APPS_SCRIPT_AQUI") return false;
+  try {
+    await fetch(SHEETS_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(payload)
+    });
+    return true;
+  } catch { return false; }
+}
+
+/* ══════════════════════════════════════════════
+   NAVEGACIÓN
+══════════════════════════════════════════════ */
+function goTo(sc) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById("screen-" + sc).classList.add("active");
+  window.scrollTo(0,0);
+  if (sc === "levels")  renderLevels();
+  if (sc === "stands")  renderStands();
+  if (sc === "summary") renderSummary();
+}
+
+function backFromIntro() {
+  goTo(S.studentName !== "Anónimo" ? "levels" : "welcome");
+}
+
+function ctaFromIntro() {
+  if (S.studentName !== "Anónimo") { goTo("levels"); }
+  else { document.getElementById('modalOverlay').classList.remove('hidden'); }
+}
+
+/* ══════════════════════════════════════════════
+   RENDER LEVELS
+══════════════════════════════════════════════ */
+function renderLevels() {
+  const grid = document.getElementById("lvGrid");
+  grid.innerHTML = "";
+  LEVELS.forEach((lv, i) => {
+    const unlocked = S.totalDone >= lv.req;
+    const cnt = levelDone(lv.id);
+    const pct = Math.min((cnt / lv.acts) * 100, 100);
+    const isDone = cnt >= lv.acts;
+    const card = document.createElement("div");
+    card.className = "lv-card au" + (unlocked ? (isDone ? " done" : "") : " locked");
+    card.style.animationDelay = (i * 0.1) + "s";
+    card.innerHTML = `
+      <div class="lv-stripe" style="background:${lv.color}"></div>
+      ${isDone ? `<div style="position:absolute;top:13px;right:14px;font-family:var(--mono);font-size:9px;letter-spacing:2px;padding:3px 9px;border:1px solid ${lv.color};color:${lv.color};opacity:.75">✓ COMPLETO</div>` : ""}
+      <div class="lv-num">${i+1}</div>
+      <div class="lv-badge" style="background:${lv.color}15;color:${lv.color};border:1px solid ${lv.color}40">${lv.badge}</div>
+      <div class="lv-name">${lv.name.toUpperCase()}</div>
+      <div class="lv-desc">${lv.desc}</div>
+      <div class="lv-foot">
+        <span class="lv-count"><span style="color:${lv.color};font-weight:600">${cnt}</span> / ${lv.acts} actividades</span>
+        <span class="lv-arrow">${unlocked ? "→" : "🔒 " + lv.req + " pts necesarios"}</span>
+      </div>
+      ${unlocked ? `<div class="lv-progress" style="width:${pct}%;background:${lv.color}"></div>` : ""}
+    `;
+    if (unlocked) {
+      card.onclick = () => {
+        S.level = lv;
+        document.getElementById("st-lv-label").textContent = lv.name;
+        document.getElementById("st-eyebrow").textContent = lv.name + " · Módulos";
+        document.getElementById("st-title").textContent = "Elige tu stand";
+        document.getElementById("st-sub").textContent = lv.desc;
+        goTo("stands");
+      };
+    }
+    grid.appendChild(card);
+  });
+}
+
+/* ══════════════════════════════════════════════
+   RENDER STANDS
+══════════════════════════════════════════════ */
+function renderStands() {
+  const grid = document.getElementById("stGrid");
+  grid.innerHTML = "";
+  STANDS.forEach((st, i) => {
+    const cnt = getDone(S.level.id, st.id);
+    const tile = document.createElement("div");
+    tile.className = "st-tile au";
+    tile.style.animationDelay = (i * 0.08) + "s";
+    tile.innerHTML = `
+      <div class="st-rule" style="background:${st.color}"></div>
+      <div class="st-index" style="color:${st.color}10">${st.idx}</div>
+      <div class="st-type" style="color:${st.color}">${st.sub} · +${st.pts} pts</div>
+      <div class="st-name" style="color:${st.color}">${st.name}</div>
+      <div class="st-desc">${st.desc}</div>
+      <div class="st-foot">
+        <span><span style="color:${st.color};font-weight:600">${cnt}</span> actividad${cnt!==1?"es":""} realizada${cnt!==1?"s":""}</span>
+        <span style="color:${st.color}">→</span>
+      </div>
+    `;
+    tile.onmouseover = () => { tile.style.background = "var(--paper2)"; };
+    tile.onmouseout  = () => { tile.style.background = ""; };
+    tile.onclick = () => openStand(st);
+    grid.appendChild(tile);
+  });
+}
+
+/* ══════════════════════════════════════════════
+   ABRIR STAND
+══════════════════════════════════════════════ */
+/* Devuelve un índice no visto aún en este stand/nivel.
+   Si ya se vieron todos, reinicia el ciclo. */
+function pickFreshIdx(pool, lv, st) {
+  const key = lv + "_" + st;
+  if (!S.seenIdx[key]) S.seenIdx[key] = [];
+  const seen = S.seenIdx[key];
+  const all = pool.map((_,i) => i);
+  let available = all.filter(i => !seen.includes(i));
+  /* Si ya se vieron todas, reinicia pero excluye la última vista */
+  if (available.length === 0) {
+    S.seenIdx[key] = seen.length > 0 ? [seen[seen.length-1]] : [];
+    available = all.filter(i => !S.seenIdx[key].includes(i));
+  }
+  const chosen = available[Math.floor(Math.random() * available.length)];
+  S.seenIdx[key].push(chosen);
+  return chosen;
+}
+
+function openStand(st) {
+  S.stand = st;
+  const pool = DATA[S.level.id][st.id];
+  S.actIdx = pickFreshIdx(pool, S.level.id, st.id);
+  S.answered = false;
+  S.selected = null;
+  S.openText = "";
+  S.openDone = false;
+  S.rerollSeed = 0;
+  S.actStartTime = Date.now();
+  document.getElementById("act-tb").textContent = st.name;
+  goTo("activity");
+  renderAct();
+}
+
+function nextAct() {
+  const pool = DATA[S.level.id][S.stand.id];
+  S.actIdx = pickFreshIdx(pool, S.level.id, S.stand.id);
+  S.answered = false;
+  S.selected = null;
+  S.openText = "";
+  S.openDone = false;
+  S.rerollSeed = 0;
+  S.actStartTime = Date.now();
+  renderAct();
+}
+
+/* ══════════════════════════════════════════════
+   RENDER ACTIVIDAD — MECÁNICAS LÚDICAS v2
+══════════════════════════════════════════════ */
+
+/* Símbolos del candado para Sala de Escape (interpretación) */
+const LOCK_SYMBOLS = ["▲","●","■","◆"];
+
+function renderAct() {
+  const wrap = document.getElementById("actWrap");
+  const st = S.stand;
+  const lv = S.level;
+  const act = DATA[lv.id][st.id][S.actIdx];
+  const doneCount = getDone(lv.id, st.id) + 1;
+  const lvObj = LEVELS.find(l => l.id === lv.id);
+
+  /* ── Panel izquierdo (fragmento) — igual en todos los tipos ── */
+  const leftHtml = `
+    <div class="act-left">
+      <div class="act-dropcap">${st.name.slice(0,2)}</div>
+      <div class="act-tag" style="border-color:${st.color}50;color:${st.color}">${st.name} · ${lv.name}</div>
+      <div class="act-seq">Actividad ${doneCount} de ${lvObj.acts}</div>
+      <blockquote class="act-frag">
+        <span class="act-frag-bar" style="background:${st.color}"></span>
+        ${act.frag}
+      </blockquote>
+      <div class="act-attr">
+        <div class="act-author">${act.obra}</div>
+        <div class="act-work">Mario Mendoza · fragmento adaptado</div>
+      </div>
+    </div>`;
+
+  let rightHtml = "";
+
+  /* ══════════════════════════════
+     STAND LECTURA — opciones visibles, highlight al hover, clic confirma
+  ══════════════════════════════ */
+  if (st.id === "lectura") {
+    const cardsHtml = act.opts.map((op, i) => {
+      let cls = "opt-choice";
+      let icon = "";
+      if (S.answered) {
+        if (i === act.ok)          { cls += " correct"; icon = "✓"; }
+        else if (i === S.selected) { cls += " wrong";   icon = "✗"; }
+        else                        { cls += " dimmed";              }
+      }
+      return `<div class="${cls}" id="o${i}"
+        onclick="${S.answered ? "" : `pickOpt(${i})`}"
+        style="--act-color:${st.color};cursor:${S.answered?"default":"pointer"}">
+        <span class="opt-letter" style="background:${st.color}15;color:${st.color}">${String.fromCharCode(65+i)}</span>
+        <span class="opt-body">${op.replace(/^[A-D]\.\s*/,"")}</span>
+        <span class="opt-icon">${icon}</span>
+      </div>`;
+    }).join("");
+
+    const fbHtml = S.answered ? `
+      <div class="fb ${S.selected===act.ok?"":"wrong"} show">
+        <div class="fb-label">${S.selected===act.ok?"✓ Correcto — eso dice exactamente el texto":"✗ Incorrecto — revisa los detalles"}</div>
+        <div class="fb-text">${act.exp}</div>
+      </div>` : "";
+
+    rightHtml = `
+      <div class="act-right" style="--act-color:${st.color}">
+        <div class="game-badge" style="border-color:${st.color}40;color:${st.color}">
+          <span class="game-icon">🔎</span>LECTURA · ${st.sub}
+        </div>
+        ${S.streak >= 2 ? `<div class="streak-bar on"><span class="streak-flame">🔥</span>Racha de ${S.streak} aciertos${S.streak>=3?" · bono activo":""}</div>` : ""}
+        <div class="act-question">${act.pregunta}</div>
+        <div class="opts-list">${cardsHtml}</div>
+        ${fbHtml}
+        <div class="actions">
+          ${S.answered ? `<button class="btn-p" onclick="nextAct()">Siguiente pregunta →</button>` : ""}
+          <button class="btn-s" onclick="goTo('stands')">← Stands</button>
+        </div>
+      </div>`;
+
+  /* ══════════════════════════════
+     STAND INTERPRETACIÓN — contexto dramático + opciones con símbolo
+  ══════════════════════════════ */
+  } else if (st.id === "interpretacion") {
+    const tilesHtml = act.opts.map((op, i) => {
+      let cls = "interp-opt";
+      let icon = "";
+      if (S.answered) {
+        if (i === act.ok)          { cls += " correct"; icon = "✓"; }
+        else if (i === S.selected) { cls += " wrong";   icon = "✗"; }
+        else                        { cls += " dimmed";              }
+      }
+      return `<div class="${cls}" id="o${i}"
+        onclick="${S.answered ? "" : `pickOpt(${i})`}"
+        style="--act-color:${st.color};cursor:${S.answered?"default":"pointer"}">
+        <span class="interp-sym" style="color:${st.color}">${LOCK_SYMBOLS[i]}</span>
+        <span class="interp-body">${op.replace(/^[A-D]\.\s*/,"")}</span>
+        <span class="interp-icon">${icon}</span>
+      </div>`;
+    }).join("");
+
+    const fbHtml = S.answered ? `
+      <div class="fb ${S.selected===act.ok?"":"wrong"} show">
+        <div class="fb-label">${S.selected===act.ok?"✓ Interpretación correcta":"✗ Esa lectura no sostiene el texto"}</div>
+        <div class="fb-text">${act.exp}</div>
+      </div>` : "";
+
+    rightHtml = `
+      <div class="act-right" style="--act-color:${st.color}">
+        <div class="game-badge" style="border-color:${st.color}40;color:${st.color}">
+          <span class="game-icon">🧠</span>INTERPRETACIÓN · ${st.sub}
+        </div>
+        ${S.streak >= 2 ? `<div class="streak-bar on"><span class="streak-flame">🔥</span>Racha de ${S.streak} aciertos${S.streak>=3?" · bono activo":""}</div>` : ""}
+        <div class="act-question">${act.pregunta}</div>
+        <div class="interp-hint-box" style="border-color:${st.color}30">
+          <span style="color:${st.color};font-size:12px;font-family:var(--mono);letter-spacing:1px">CLAVE:</span> Lee cada opción preguntándote: ¿el fragmento la justifica o solo la sugiere? Solo una tiene respaldo real en el texto.
+        </div>
+        <div class="opts-list">${tilesHtml}</div>
+        ${fbHtml}
+        <div class="actions">
+          ${S.answered ? `<button class="btn-p" onclick="nextAct()">Siguiente fragmento →</button>` : ""}
+          <button class="btn-s" onclick="goTo('stands')">← Stands</button>
+        </div>
+      </div>`;
+
+  /* ══════════════════════════════
+     STAND ESCRITURA — arranque de texto + medallas en vivo
+  ══════════════════════════════ */
+  } else if (st.id === "escritura") {
+    const wordCount = S.openText.trim().split(/\s+/).filter(Boolean).length;
+    const goalWords = 40;
+    const progress = Math.min(Math.round((wordCount/goalWords)*100),100);
+    const medal = wordCount < 15 ? "🥉 Inicio" : wordCount < goalWords ? "🥈 Desarrollando" : "🥇 Completo";
+    const hintHtml = act.hint ? `<div class="xp-hint"><span>💡</span>${act.hint}</div>` : "";
+
+    const fbHtml = S.openDone ? `
+      <div class="fb show" style="border-color:${st.color}">
+        <div class="fb-label" style="color:${st.color}">✓ Texto guardado</div>
+        <div class="fb-text">Tu respuesta quedó registrada. Puedes continuar con otro fragmento.</div>
+      </div>` : "";
+
+    rightHtml = `
+      <div class="act-right" style="--act-color:${st.color}">
+        <div class="game-badge" style="border-color:${st.color}40;color:${st.color}">
+          <span class="game-icon">🎭</span>ESCRITURA · ${st.sub}
+        </div>
+        <div class="writing-prompt" style="border-left-color:${st.color}">
+          <div class="writing-prompt-label" style="color:${st.color}"> Tu misión</div>
+          <div class="writing-prompt-text">${act.consigna}</div>
+        </div>
+        ${hintHtml}
+        ${!S.openDone ? `
+          <div class="writing-toolbar">
+            <span class="writing-goal" id="medalLabel">${medal}</span>
+            <span class="writing-goal">${wordCount} / ${goalWords} palabras</span>
+          </div>
+          <div class="medal-track"><div class="medal-fill" id="medalFill" style="width:${progress}%;background:${st.color}"></div></div>
+          <textarea class="open-ta" id="ota" style="border-top-color:${st.color}25" placeholder="Escribe aquí…"
+            oninput="S.openText=this.value;
+              let wc=this.value.trim().split(/\\s+/).filter(Boolean).length;
+              let pr=Math.min(Math.round((wc/${goalWords})*100),100);
+              document.getElementById('medalLabel').textContent=wc<15?'🥉 Inicio':wc<${goalWords}?'🥈 Desarrollando':'🥇 Completo';
+              this.parentElement.querySelectorAll('.writing-goal')[1].textContent=wc+' / ${goalWords} palabras';
+              document.getElementById('medalFill').style.width=pr+'%'"
+          >${S.openText}</textarea>
+          <div class="charcount" id="cc">${S.openText.length} caracteres</div>`
+        : `<div class="open-sent" style="border-color:${st.color}">${S.openText.replace(/\n/g,"<br>")}</div>`}
+        ${fbHtml}
+        <div class="actions">
+          ${!S.openDone
+            ? `<button class="btn-p" onclick="sendOpen()" id="sbtn">Guardar mi texto →</button>`
+            : `<button class="btn-p" onclick="nextAct()">Siguiente misión →</button>`}
+          <button class="btn-s" onclick="goTo('stands')">← Stands</button>
+        </div>
+      </div>`;
+
+  /* ══════════════════════════════
+     STAND CREATIVO — formatos poéticos con estructura visible
+  ══════════════════════════════ */
+  } else {
+    const seed = (act.obra.length + act.consigna.length + S.actIdx + S.rerollSeed * 7);
+    const OBJ = ["un reloj detenido","una carta sin abrir","un espejo roto","una llave sin puerta","una foto borrosa","un boleto de bus usado","un zapato sin par","un mapa quemado"];
+    const EMO = ["nostalgia","miedo contenido","esperanza terca","rabia silenciosa","ternura inesperada","extrañeza","alivio amargo","euforia breve"];
+    const LUG = ["un balcón a las 3am","una estación vacía","un pasillo de hospital","una tienda cerrada","un parque bajo lluvia","una azotea en invierno","un bus sin pasajeros","una sala de espera"];
+    const ing1 = OBJ[seed % OBJ.length];
+    const ing2 = EMO[(seed+2) % EMO.length];
+    const ing3 = LUG[(seed+4) % LUG.length];
+    const rerollsLeft = Math.max(2 - S.rerollSeed, 0);
+
+    /* Detectar formato poético de la consigna */
+    const fmtMatch = act.consigna.match(/^(🎭|🖊️|📝|📸)\s*FORMATO:\s*([^.]+)\./);
+    const fmtLabel = fmtMatch ? fmtMatch[2].trim() : "POEMA LIBRE";
+    const consignaClean = act.consigna.replace(/^(🎭|🖊️|📝|📸)\s*FORMATO:\s*[^.]+\.\s*/,"");
+
+    /* Plantilla visual con ejemplos concretos usando los ingredientes del estudiante */
+    function getPlantilla(fmt, o, e, l) {
+      const P = {
+        "MONÓLOGO CON RESTRICCIÓN": [
+          {tag:"Línea 1", ej:`Negro era el año en que encontré ${o}…`},
+          {tag:"Línea 2", ej:`Tres veces intenté olvidar la ${e}…`},
+          {tag:"Línea 3", ej:`Desde ${l} vi cómo todo se iba…`},
+          {tag:"Línea 4", ej:`Dos manos sostenían ${o} sin saber qué hacer…`},
+          {tag:"Línea 5", ej:`Rojo fue el color de esa ${e} que no nombré…`},
+          {tag:"Línea 6", ej:`En ${l} aprendí a callar lo que dolía.`},
+        ],
+        "MICROCUENTO EN ESPEJO": [
+          {tag:"Inicio (se repetirá al final)", ej:`Nadie supo lo que pasó esa noche en ${l}.`},
+          {tag:"Transformación 1", ej:`Ella tenía ${o} en la mano cuando llegaron.`},
+          {tag:"Transformación 2", ej:`La ${e} la paralizó — no pudo moverse.`},
+          {tag:"Transformación 3", ej:`Cuando quiso hablar, ya era demasiado tarde.`},
+          {tag:"Transformación 4", ej:`Solo quedó ${o} sobre el suelo frío.`},
+          {tag:"Cierre-espejo (igual al inicio, diferente significado)", ej:`Nadie supo lo que pasó esa noche en ${l}.`},
+        ],
+        "POEMA DE DICOTOMÍAS ESCALADO": [
+          {tag:"Verso 1 — abstracto", ej:`Recordar no es lo mismo que no olvidar.`},
+          {tag:"Verso 2 — más concreto", ej:`Guardar ${o} no es lo mismo que conservarlo.`},
+          {tag:"Verso 3 — más íntimo", ej:`Sentir ${e} no es lo mismo que dejarla entrar.`},
+          {tag:"Verso 4 — más íntimo", ej:`Estar en ${l} no es lo mismo que pertenecer.`},
+          {tag:"Verso 5 — el más tuyo (algo vivido)", ej:`[Tu experiencia personal aquí]`},
+          {tag:"Verso 6 — cierre tuyo", ej:`[El contraste más importante para ti]`},
+        ],
+        "TEXTO EN TIEMPO REAL": [
+          {tag:"Descripción inicial", ej:`${l} todavía existe. Tiene paredes y tiene nombre.`},
+          {tag:"Algo cambia — corrígete", ej:`Corrección: ${l} ya no es lo que era cuando empecé esta oración.`},
+          {tag:"Continúa con lo nuevo", ej:`Ahora solo queda ${o} y la ${e} de quienes lo recuerdan.`},
+          {tag:"Cierre", ej:`La escritura no pudo salvarlo. Pero quedó escrito.`},
+        ],
+        "METÁFORA EXTENDIDA PROPIA": [
+          {tag:"Oración 1 — declara el animal", ej:`Mi barrio es un perro callejero que aprendió a desconfiar.`},
+          {tag:"Oración 2 — cómo se mueve", ej:`Avanza despacio, como cargando ${o} invisible.`},
+          {tag:"Oración 3 — qué come", ej:`Se alimenta de ${e} y de promesas no cumplidas.`},
+          {tag:"Oración 4 — de qué tiene miedo", ej:`Teme la limpieza, los uniformes, el silencio de ${l}.`},
+          {tag:"Oración 5-6 — cuándo duerme/despierta", ej:`Duerme cuando llueve. Despierta cuando alguien lo necesita.`},
+          {tag:"Oración 7-8 — qué pasará", ej:`Nadie sabe si sobrevivirá. Pero sigue aquí.`},
+        ],
+        "LISTA POÉTICA CON GIRO": [
+          {tag:"Línea 1 — causa cotidiana", ej:`De esperar turno en una fila que no avanza.`},
+          {tag:"Línea 2 — causa cotidiana", ej:`De ${e} acumulada que no tiene a dónde ir.`},
+          {tag:"Línea 3 — causa cotidiana", ej:`De noches en ${l} sin saber qué sigue.`},
+          {tag:"Línea 4 — cotidiana", ej:`De perder ${o} sin entender por qué importaba.`},
+          {tag:"Línea 5 — cotidiana", ej:`De repetir lo mismo esperando resultados distintos.`},
+          {tag:"Línea 6 — sorprendente", ej:`De la canción que sonaba esa tarde específica.`},
+          {tag:"Línea 7 — sorprendente", ej:`De saber exactamente qué hora era cuando todo cambió.`},
+          {tag:"Línea 8 — el giro más poderoso", ej:`De haberse quedado callado justo cuando había algo que decir.`},
+        ],
+        "MANIFIESTO BREVE": [
+          {tag:"Línea 1", ej:`Aprendí que ${e} no es una debilidad — es información.`},
+          {tag:"Línea 2", ej:`Aprendí que ${o} puede ser una forma de resistencia.`},
+          {tag:"Línea 3", ej:`Aprendí que ${l} tiene historia aunque nadie la enseñe.`},
+          {tag:"Línea 4", ej:`Aprendí que el sistema no falla — hace exactamente lo que diseñaron.`},
+          {tag:"Línea 5", ej:`Aprendí que preguntar es más peligroso que no saber.`},
+          {tag:"Línea 6", ej:`Aprendí que sobrevivir no es suficiente.`},
+          {tag:"Línea 7 — qué harás diferente", ej:`Por eso voy a [tu declaración aquí].`},
+          {tag:"Línea 8 — cierre", ej:`Esta generación no va a guardar silencio.`},
+        ],
+        "POSTAL LITERARIA": [
+          {tag:"Belleza — imagen concreta", ej:`Ven a ver ${l} al amanecer, cuando todavía huele a posibilidad.`},
+          {tag:"Belleza + detalle", ej:`Trae ${o} — aquí todo tiene historia si sabes mirar.`},
+          {tag:"Belleza mezclada con dolor", ej:`La ${e} de este lugar te va a alcanzar antes de que llegues a la esquina.`},
+          {tag:"Dolor mezclado con belleza", ej:`Pero es una ${e} que enseña cosas que no se aprenden en otra parte.`},
+          {tag:"Invitación", ej:`Ven de todas formas.`},
+          {tag:"Advertencia", ej:`Pero no llegues tarde — este lugar cambia de cara cuando el sol se esconde.`},
+        ],
+      };
+      return P[fmt] || [{tag:"Escribe libremente",ej:"Cada línea es tuya."}];
+    }
+    const plantilla = getPlantilla(fmtLabel, ing1, ing2, ing3);
+
+    const fbHtml = S.openDone ? `
+      <div class="fb show" style="border-color:${st.color}">
+        <div class="fb-label" style="color:${st.color}">✓ Creación guardada</div>
+        <div class="fb-text">Tu texto quedó registrado.</div>
+      </div>` : "";
+
+    const wordCount = S.openText.trim().split(/\s+/).filter(Boolean).length;
+
+    rightHtml = `
+      <div class="act-right" style="--act-color:${st.color}">
+        <div class="game-badge" style="border-color:${st.color}40;color:${st.color}">
+          <span class="game-icon">✒️</span>CREATIVO · ${st.sub}
+        </div>
+        <div class="fmt-tag" style="border-color:${st.color};color:${st.color}">${fmtLabel}</div>
+
+        <div class="writing-prompt" style="border-left-color:${st.color};margin-bottom:12px">
+          <div class="writing-prompt-label" style="color:${st.color}">Misión</div>
+          <div class="writing-prompt-text">${consignaClean}</div>
+        </div>
+
+        <div class="remix-ingredients">
+          <div class="ingredient-chip" style="border-color:${st.color}50">
+            <span class="ingredient-label">Objeto</span>
+            <span class="ingredient-value">${ing1}</span>
+          </div>
+          <div class="ingredient-chip" style="border-color:${st.color}50">
+            <span class="ingredient-label">Emoción</span>
+            <span class="ingredient-value">${ing2}</span>
+          </div>
+          <div class="ingredient-chip" style="border-color:${st.color}50">
+            <span class="ingredient-label">Lugar</span>
+            <span class="ingredient-value">${ing3}</span>
+          </div>
+        </div>
+
+        ${!S.openDone ? `
+        <div class="poem-structure">
+          <div class="poem-structure-title"> ¿Cómo escribirlo? — sigue esta guía</div>
+          ${plantilla.map((p,i)=>`
+            <div class="poem-step">
+              <div class="poem-step-tag">${p.tag}</div>
+              <div class="poem-step-ex">Por ejemplo: <em>${p.ej}</em></div>
+            </div>`).join("")}
+        </div>
+
+        <div class="ingr-check-row">
+          <span class="ingr-check-label" style="color:${st.color}">¿Qué materiales usaste?</span>
+          <label class="ingr-check"><input type="checkbox" id="ck0" onchange="updateSendBtn()"> ${ing1}</label>
+          <label class="ingr-check"><input type="checkbox" id="ck1" onchange="updateSendBtn()"> ${ing2}</label>
+          <label class="ingr-check"><input type="checkbox" id="ck2" onchange="updateSendBtn()"> ${ing3}</label>
+        </div>
+
+        <textarea class="poem-area" id="ota"
+          style="border-top-color:${st.color}"
+          placeholder="Escribe aquí tu ${fmtLabel.toLowerCase()}…"
+          oninput="S.openText=this.value;document.getElementById('cc').textContent=this.value.trim().split(/\\s+/).filter(Boolean).length+' palabras'"
+        >${S.openText}</textarea>
+        <div class="charcount" id="cc">${wordCount} palabras</div>
+
+        ${rerollsLeft > 0 ? `<button class="reroll-btn" style="border-color:${st.color}40;color:${st.color}" onclick="rerollIngredients()">🎲 Nuevos materiales (${rerollsLeft} ${rerollsLeft===1?"vez":"veces"})</button>` : ""}
+        ` : `<div class="open-sent" style="border-color:${st.color};white-space:pre-wrap">${S.openText}</div>`}
+
+        ${fbHtml}
+        <div class="actions">
+          ${!S.openDone
+            ? `<button class="btn-p" id="sbtn" onclick="sendOpen()">Guardar creación →</button>`
+            : `<button class="btn-p" onclick="nextAct()">Nueva creación →</button>`}
+          <button class="btn-s" onclick="goTo('stands')">← Stands</button>
+        </div>
+      </div>`;
+  }
+
+  wrap.innerHTML = leftHtml + rightHtml;
+}
+
+/* ══════════════════════════════════════════════
+   BARAJAR MATERIALES (creativo)
+══════════════════════════════════════════════ */
+function updateSendBtn() {
+  const btn = document.getElementById("sbtn");
+  if (!btn) return;
+  const ck0 = document.getElementById("ck0");
+  const ck1 = document.getElementById("ck1");
+  const ck2 = document.getElementById("ck2");
+  if (!ck0) return;
+  const checked = [ck0,ck1,ck2].filter(c=>c&&c.checked).length;
+  btn.textContent = checked < 1 ? "Marca al menos 1 material usado →" : `Guardar mi creación (${checked}/3 materiales) →`;
+  btn.style.opacity = checked < 1 ? ".5" : "1";
+}
+
+function rerollIngredients() {
+  if (S.rerollSeed >= 2) return;
+  S.rerollSeed++;
+  renderAct();
+}
+
+/* ══════════════════════════════════════════════
+   RESPONDER MCQ
+══════════════════════════════════════════════ */
+function pickOpt(idx) {
+  if (S.answered) return;
+  S.answered = true;
+  S.selected = idx;
+  const st = S.stand;
+  const act = DATA[S.level.id][st.id][S.actIdx];
+  const ok = idx === act.ok;
+  let pts = ok ? st.pts : Math.floor(st.pts * 0.25);
+  if (ok) {
+    S.corrects++;
+    S.streak++;
+    if (S.streak > S.bestStreak) S.bestStreak = S.streak;
+    /* Bono de racha: +2 pts por cada acierto consecutivo a partir del 3° */
+    if (S.streak >= 3) {
+      const bonus = Math.min((S.streak - 2) * 2, 10);
+      pts += bonus;
+    }
+  } else {
+    S.streak = 0;
+  }
+  addPts(pts, st.name + (ok ? (S.streak >= 3 ? ` correcto (racha x${S.streak})` : " correcto") : " intento"));
+  markDone();
+  const secs = Math.round((Date.now() - S.actStartTime) / 1000);
+  sendToServer({
+    estudiante: S.studentName,
+    curso: S.studentCourse,
+    nivel: S.level.id,
+    stand: st.name,
+    tipo: st.type,
+    obra: act.obra,
+    respuesta: act.opts[idx],
+    correcta: String(ok),
+    puntos: String(pts),
+    textoAbierto: "",
+    tiempo: String(secs),
+    sesionId: S.sessionId
+  });
+  renderAct();
+  checkDone();
+}
+
+/* ══════════════════════════════════════════════
+   ENVIAR RESPUESTA ABIERTA
+══════════════════════════════════════════════ */
+function sendOpen() {
+  const ta = document.getElementById("ota");
+  const val = (ta ? ta.value : S.openText).trim();
+  if (val.length < 15) { alert("¡Aún falta contenido! Escribe al menos unas oraciones para continuar."); return; }
+
+  /* Para el stand creativo: verificar que marcó al menos 1 material */
+  let materialesUsados = "";
+  if (S.stand.id === "creativo") {
+    const ck0 = document.getElementById("ck0");
+    const ck1 = document.getElementById("ck1");
+    const ck2 = document.getElementById("ck2");
+    const marcados = [];
+    if (ck0 && ck0.checked) marcados.push("Objeto");
+    if (ck1 && ck1.checked) marcados.push("Emoción");
+    if (ck2 && ck2.checked) marcados.push("Lugar");
+    if (marcados.length === 0) { alert("Marca al menos 1 material que usaste en tu texto."); return; }
+    materialesUsados = marcados.join(", ");
+  }
+
+  S.openText = val;
+  S.openDone = true;
+  S.opens++;
+  const pts = S.stand.pts;
+  addPts(pts, S.stand.name + " completado");
+  markDone();
+  const secs = Math.round((Date.now() - S.actStartTime) / 1000);
+  const act = DATA[S.level.id][S.stand.id][S.actIdx];
+  sendToServer({
+    estudiante: S.studentName,
+    curso: S.studentCourse,
+    nivel: S.level.id,
+    stand: S.stand.name,
+    tipo: S.stand.type,
+    obra: act.obra,
+    respuesta: materialesUsados ? `Materiales usados: ${materialesUsados}` : "Respuesta abierta",
+    correcta: "true",
+    puntos: String(pts),
+    textoAbierto: val,
+    tiempo: String(secs),
+    sesionId: S.sessionId
+  });
+  renderAct();
+  checkDone();
+}
+
+function markDone() {
+  const k = doneKey(S.level.id, S.stand.id);
+  S.done[k] = (S.done[k] || 0) + 1;
+  S.totalDone++;
+}
+
+function checkDone() {
+  const lvObj = LEVELS.find(l => l.id === S.level.id);
+  if (levelDone(S.level.id) >= lvObj.acts) {
+    setTimeout(() => goTo("summary"), 1300);
+  }
+}
+
+/* ══════════════════════════════════════════════
+   SUMMARY
+══════════════════════════════════════════════ */
+function renderSummary() {
+  const elapsed = Math.round((Date.now() - S.sessionStart) / 60000);
+  document.getElementById("sum-msg").textContent =
+    "Nivel " + (S.level?.name || "") + " completado — ¡Excelente, " + S.studentName + " (" + S.studentCourse + ")!";
+  const items = [
+    {n:S.totalDone, l:"Actividades", c:"#2558a8"},
+    {n:S.corrects,  l:"Correctas",   c:"#1a6854"},
+    {n:S.pts,       l:"Puntos",      c:"#b07d0e"},
+    {n:elapsed+"m", l:"Tiempo",      c:"#bf3728"}
+  ];
+  document.getElementById("sumGrid").innerHTML = items.map(it =>
+    `<div class="sum-tile"><div class="sum-n" style="color:${it.c}">${it.n}</div><div class="sum-l">${it.l}</div></div>`
+  ).join("");
+  const streakEl = document.getElementById("sum-streak-msg");
+  if (streakEl) {
+    streakEl.innerHTML = S.bestStreak >= 3
+      ? `<div class="server-notif ok">🔥 Tu mejor racha fue de ${S.bestStreak} aciertos seguidos</div>`
+      : "";
+  }
+  checkServer().then(() => {
+    const msg = document.getElementById("sum-server-msg");
+    msg.innerHTML = (SHEETS_URL && SHEETS_URL !== "TU_URL_DE_APPS_SCRIPT_AQUI")
+      ? `<div class="server-notif ok">✓ Resultados enviados a Google Sheets </div>`
+      : `<div class="server-notif fail">⚠ Configura tu URL de Google Sheets para guardar resultados en la nube.</div>`;
+  });
+}
+
+/* INIT */
+renderLevels();
+</script>
+<script>
+const _rs=renderStands,_rl=renderLevels,SS=['INTERPRETACIÓN', 'ESCRITURA', 'CREATIVO'],LL=['Intermedio', 'Avanzado'];
+renderStands=function(){_rs();const g=document.getElementById('stGrid');SS.slice(STANDS.length-1).forEach(n=>{const e=document.createElement('div');e.className='st-tile st-soon';e.innerHTML='<div class="st-name">'+n+'</div><div class="st-desc">Aún no disponible en esta beta.</div><div><span class="soon-tag">PRÓXIMAMENTE</span></div>';g.appendChild(e)})};
+renderLevels=function(){_rl();const g=document.getElementById('lvGrid');LL.slice(LEVELS.length-1).forEach(n=>{const e=document.createElement('div');e.className='lv-card lv-soon';e.innerHTML='<div class="lv-name">'+n.toUpperCase()+'</div><div class="lv-desc">Aún no disponible en esta beta.</div><div><span class="soon-tag">PRÓXIMAMENTE</span></div>';g.appendChild(e)})};
+</script><div class="beta-stripe"></div><div class="beta-pill">Beta 3<i>Casi final · sin Creativo</i></div><a class="back-main" href="index.html">← Volver al proyecto</a></body>
+</html>
